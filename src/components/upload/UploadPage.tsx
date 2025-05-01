@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { RoomBooking } from '@/types/booking';
 import FileUpload from '@/components/FileUpload';
 import { UploadSkeleton } from '@/components/SkeletonLoader';
@@ -19,41 +19,17 @@ const UploadPage: React.FC<UploadPageProps> = ({
 }) => {
   const { toast } = useToast();
   
-  // Automatically grant admin access on mount
-  useEffect(() => {
-    try {
-      localStorage.setItem('wmataAdminAccess', 'granted');
-      console.log("UploadPage: Admin access automatically granted");
-      toast({
-        title: "Ready to Upload",
-        description: "You can now upload your Excel file."
-      });
-    } catch (error) {
-      console.error("Error setting admin access:", error);
-    }
-  }, []);
-
-  // Admin access handler - directly open file dialog
-  const handleAdminAccess = () => {
-    console.log("Upload button clicked");
-    
-    // Find and click the hidden file input
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-      console.log("File input clicked");
-    } else {
-      console.error("File input not found");
-      toast({
-        title: "Error",
-        description: "Upload function not available. Please refresh the page."
-      });
-    }
-  };
+  // Simple notification when component mounts
+  React.useEffect(() => {
+    toast({
+      title: "Ready to Upload",
+      description: "You can now upload your Excel file."
+    });
+  }, [toast]);
 
   return (
     <div className="container mx-auto py-4">
-      <PageHeader onAdminAccess={handleAdminAccess} />
+      <PageHeader />
       
       {isLoading ? (
         <UploadSkeleton />

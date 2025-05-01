@@ -3,21 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 
-interface PageHeaderProps {
-  onAdminAccess?: () => void;
-}
-
-const PageHeader: React.FC<PageHeaderProps> = ({ onAdminAccess }) => {
-  const handleUploadClick = () => {
-    // Ensure admin access is granted through localStorage
-    localStorage.setItem('wmataAdminAccess', 'granted');
-    console.log("Admin access granted via upload button");
-    
-    if (onAdminAccess) {
-      onAdminAccess();
-    }
-  };
-
+const PageHeader: React.FC = () => {
   return (
     <div className="mb-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -29,9 +15,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({ onAdminAccess }) => {
         </div>
         
         <Button 
-          onClick={handleUploadClick}
           variant="default"
           className="mt-4 md:mt-0"
+          onClick={() => {
+            // Find and click the hidden file input
+            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+            if (fileInput) {
+              fileInput.click();
+            }
+          }}
         >
           <Upload className="mr-2 h-4 w-4" />
           Upload File
