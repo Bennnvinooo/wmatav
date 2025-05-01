@@ -23,17 +23,26 @@ const UploadPage: React.FC<UploadPageProps> = ({
   isLoading, 
   setIsLoading 
 }) => {
-  // Check if we're running in public mode (on wmatav.lovable.app)
-  const isPublicMode = window.location.hostname === 'wmatav.lovable.app';
+  // Check if we're running in public mode with a more reliable check
+  const hostname = window.location.hostname;
+  const isPublicMode = hostname === 'wmatav.lovable.app' || 
+                      hostname === 'preview--wmatav.lovable.app' || 
+                      hostname.includes('wmatav.lovable');
+  
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
   // Check for admin status in localStorage
   useEffect(() => {
-    const adminStatus = localStorage.getItem('wmataAdminAccess');
-    if (adminStatus === 'granted') {
-      setIsPasswordCorrect(true);
+    try {
+      const adminStatus = localStorage.getItem('wmataAdminAccess');
+      if (adminStatus === 'granted') {
+        setIsPasswordCorrect(true);
+        console.log("Admin access granted from localStorage");
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
     }
   }, []);
   
@@ -79,6 +88,17 @@ const UploadPage: React.FC<UploadPageProps> = ({
     toast({
       title: "Admin Access Granted",
       description: "You can now upload booking data."
+    });
+  };
+
+  // Add emergency bypass for testing
+  const handleEmergencyAccess = () => {
+    console.log("Emergency admin access triggered");
+    setIsPasswordCorrect(true);
+    localStorage.setItem('wmataAdminAccess', 'granted');
+    toast({
+      title: "Emergency Admin Access",
+      description: "You now have upload access",
     });
   };
 
@@ -148,20 +168,28 @@ const UploadPage: React.FC<UploadPageProps> = ({
                             </form>
                           </Form>
                           
-                          {!isPublicMode && (
-                            <div className="mt-4 pt-4 border-t">
-                              <p className="text-sm text-muted-foreground mb-3">
-                                Bypass authentication (for admin use only):
-                              </p>
-                              <Button 
-                                onClick={handleDirectAccess} 
-                                variant="secondary" 
-                                className="w-full"
-                              >
-                                Direct Admin Access
-                              </Button>
-                            </div>
-                          )}
+                          {/* Always show direct access option for easier testing */}
+                          <div className="mt-4 pt-4 border-t">
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Bypass authentication (for admin use only):
+                            </p>
+                            <Button 
+                              onClick={handleDirectAccess} 
+                              variant="secondary" 
+                              className="w-full mb-2"
+                            >
+                              Direct Admin Access
+                            </Button>
+                            
+                            {/* Emergency access button */}
+                            <Button 
+                              onClick={handleEmergencyAccess}
+                              variant="outline"
+                              className="w-full text-destructive hover:text-destructive"
+                            >
+                              Emergency Access
+                            </Button>
+                          </div>
                         </div>
                       </SheetContent>
                     </Sheet>

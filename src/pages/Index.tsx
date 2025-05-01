@@ -27,20 +27,29 @@ const Index: React.FC = () => {
   const { toast } = useToast();
   const [isPublicMode, setIsPublicMode] = useState(false);
   
-  // Check if we're in public mode
+  // Check if we're in public mode - make this more reliable with fallbacks
   useEffect(() => {
-    const hostname = window.location.hostname;
-    const isPublic = hostname === 'wmatav.lovable.app';
-    setIsPublicMode(isPublic);
-    console.log("Current hostname:", hostname, "Is public mode:", isPublic);
-    
-    // Show toast only once on initial load in public mode
-    if (isPublic && bookings.length === 0) {
-      toast({
-        title: "Public View Mode",
-        description: "Please login or check back when the administrator has uploaded data.",
-        duration: 5000
-      });
+    try {
+      const hostname = window.location.hostname;
+      // Check for multiple possible public domains
+      const isPublic = hostname === 'wmatav.lovable.app' || 
+                      hostname === 'preview--wmatav.lovable.app' || 
+                      hostname.includes('wmatav.lovable');
+      setIsPublicMode(isPublic);
+      console.log("Current hostname:", hostname, "Is public mode:", isPublic);
+      
+      // Show toast only once on initial load in public mode
+      if (isPublic && bookings.length === 0) {
+        toast({
+          title: "Public View Mode",
+          description: "Please login or check back when the administrator has uploaded data.",
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error("Error checking hostname:", error);
+      // Default to non-public mode if there's an error
+      setIsPublicMode(false);
     }
   }, []);
   

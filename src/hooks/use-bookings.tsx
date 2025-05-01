@@ -100,72 +100,86 @@ export function useBookings() {
   useEffect(() => {
     setIsLoading(true);
     
-    // First, check if we're on the public domain
-    const isPublicMode = window.location.hostname === 'wmatav.lovable.app';
-    console.log("Is public mode:", isPublicMode);
-    
-    // Try different storage locations in order of preference
-    const tryGetBookings = () => {
-      // First try localStorage (for both admin and public modes)
-      const savedBookings = localStorage.getItem('roomBookings');
-      if (savedBookings) {
+    // First, check if we're on the public domain - make more reliable
+    try {
+      const hostname = window.location.hostname;
+      const isPublicMode = hostname === 'wmatav.lovable.app' || 
+                          hostname === 'preview--wmatav.lovable.app' || 
+                          hostname.includes('wmatav.lovable');
+      console.log("Is public mode:", isPublicMode);
+      
+      // Try different storage locations in order of preference
+      const tryGetBookings = () => {
         try {
-          const parsedBookings = JSON.parse(savedBookings) as RoomBooking[];
-          if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
-            console.log("Loaded saved bookings from localStorage:", parsedBookings.length);
-            setBookings(parsedBookings);
-            
-            if (!isPublicMode) {
-              toast({
-                title: "Loaded saved data",
-                description: `${parsedBookings.length} bookings loaded from your last session`,
-              });
+          // First try localStorage (for both admin and public modes)
+          const savedBookings = localStorage.getItem('roomBookings');
+          if (savedBookings) {
+            try {
+              const parsedBookings = JSON.parse(savedBookings) as RoomBooking[];
+              if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
+                console.log("Loaded saved bookings from localStorage:", parsedBookings.length);
+                setBookings(parsedBookings);
+                
+                if (!isPublicMode) {
+                  toast({
+                    title: "Loaded saved data",
+                    description: `${parsedBookings.length} bookings loaded from your last session`,
+                  });
+                }
+                return true;
+              }
+            } catch (error) {
+              console.error('Failed to load saved bookings from localStorage:', error);
             }
-            return true;
           }
-        } catch (error) {
-          console.error('Failed to load saved bookings from localStorage:', error);
-        }
-      }
-      
-      // Then try sessionStorage (useful for shared data across tabs)
-      const sessionBookings = sessionStorage.getItem('roomBookings');
-      if (sessionBookings) {
-        try {
-          const parsedBookings = JSON.parse(sessionBookings) as RoomBooking[];
-          if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
-            console.log("Loaded saved bookings from sessionStorage:", parsedBookings.length);
-            setBookings(parsedBookings);
-            return true;
+          
+          // Then try sessionStorage (useful for shared data across tabs)
+          const sessionBookings = sessionStorage.getItem('roomBookings');
+          if (sessionBookings) {
+            try {
+              const parsedBookings = JSON.parse(sessionBookings) as RoomBooking[];
+              if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
+                console.log("Loaded saved bookings from sessionStorage:", parsedBookings.length);
+                setBookings(parsedBookings);
+                return true;
+              }
+            } catch (error) {
+              console.error('Failed to load saved bookings from sessionStorage:', error);
+            }
           }
+          
+          return false;
         } catch (error) {
-          console.error('Failed to load saved bookings from sessionStorage:', error);
+          console.error('Error loading bookings:', error);
+          return false;
         }
-      }
+      };
       
-      return false;
-    };
-    
-    // Try to load bookings from storage
-    const foundBookings = tryGetBookings();
-    
-    // For public mode, show upload only if no data was found
-    if (isPublicMode) {
-      setShowUploadForm(false);
+      // Try to load bookings from storage
+      const foundBookings = tryGetBookings();
       
-      if (!foundBookings) {
-        // In public mode with no saved data, show an empty state
-        console.log("No saved bookings found in public mode");
-        setBookings([]);
-        toast({
-          title: "No booking data available",
-          description: "Please check back later when the administrator has uploaded data.",
-          variant: "destructive"
-        });
+      // For public mode, show upload only if no data was found
+      if (isPublicMode) {
+        setShowUploadForm(false);
+        
+        if (!foundBookings) {
+          // In public mode with no saved data, show an empty state
+          console.log("No saved bookings found in public mode");
+          setBookings([]);
+          toast({
+            title: "No booking data available",
+            description: "Please check back later when the administrator has uploaded data.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        // In admin mode, show upload form if no data was found
+        setShowUploadForm(!foundBookings);
       }
-    } else {
-      // In admin mode, show upload form if no data was found
-      setShowUploadForm(!foundBookings);
+    } catch (error) {
+      console.error("Error in use-bookings effect:", error);
+      // Default behavior if there's an error
+      setShowUploadForm(true);
     }
     
     setIsLoading(false);
