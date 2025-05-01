@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import { isSameDay, isWithinInterval, parseISO } from 'date-fns';
@@ -37,11 +38,20 @@ export const useBookingFilter = (bookings: RoomBooking[], dateRange: { start: Da
         
         const bookingDate = new Date(year, month, day);
         
+        // Add debugging information
+        console.log("Comparing booking date:", booking.date, "with filter range:", 
+          dateRange.start.toISOString().split('T')[0],
+          dateRange.end.toISOString().split('T')[0]
+        );
+        
         // Check if we're in "day" view mode (when start and end are the same)
         if (isSameDay(dateRange.start, dateRange.end)) {
           const isSameBookingDay = isSameDay(bookingDate, dateRange.start);
           if (!isSameBookingDay) {
             console.log(`Booking date ${dateStr} is not on same day as:`, 
+              dateRange.start.toISOString().split('T')[0]);
+          } else {
+            console.log(`Booking date ${dateStr} matches filter day:`, 
               dateRange.start.toISOString().split('T')[0]);
           }
           return isSameBookingDay;
@@ -55,6 +65,11 @@ export const useBookingFilter = (bookings: RoomBooking[], dateRange: { start: Da
         
         if (!isWithin) {
           console.log(`Booking date ${dateStr} is not within range:`, 
+            dateRange.start.toISOString().split('T')[0], 
+            dateRange.end.toISOString().split('T')[0]
+          );
+        } else {
+          console.log(`Booking date ${dateStr} is within range:`, 
             dateRange.start.toISOString().split('T')[0], 
             dateRange.end.toISOString().split('T')[0]
           );

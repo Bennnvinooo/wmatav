@@ -2,7 +2,7 @@
 import * as XLSX from 'xlsx';
 import { RoomBooking } from '@/types/booking';
 import { v4 as uuidv4 } from 'uuid';
-import { COLUMN_VARIATIONS } from './types';
+import { COLUMN_VARIATIONS, EXACT_COLUMN_HEADERS } from './types';
 import { findMatchingColumn } from './columnUtils';
 import { normalizeDate, normalizeTime, extractTimeRange } from './dateTimeUtils';
 import { normalizeStatus, normalizeColor } from './dataUtils';
@@ -54,6 +54,13 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
         );
         
         console.log("Excel headers:", headers);
+
+        // Check if these are the exact headers from our provided spreadsheet format
+        const exactHeaderMatch = checkExactHeaders(rawData[headerRowIndex] as unknown[]);
+        if (exactHeaderMatch) {
+          console.log("Found exact match for provided spreadsheet format!");
+          return processExactSpreadsheetFormat(rawData, headerRowIndex, resolve);
+        }
         
         // Special handling for data with no formal headers (like your example)
         if (!headers.some(h => 
@@ -264,6 +271,134 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
     reader.readAsArrayBuffer(file);
   });
 };
+
+// Function to check if the headers match our expected format exactly
+function checkExactHeaders(headerRow: unknown[]): boolean {
+  if (!headerRow || !Array.isArray(headerRow) || headerRow.length < 7) return false;
+  
+  // Convert all headers to strings and check if they match our expected headers
+  const headerStrings = headerRow.map(h => h ? String(h).trim() : '');
+  
+  // Check for at least date, organization, and time columns - the key ones
+  const dateIndex = headerStrings.indexOf(EXACT_COLUMN_HEADERS.date);
+  const orgIndex = headerStrings.indexOf(EXACT_COLUMN_HEADERS.organization);
+  const timeIndex = headerStrings.indexOf(EXACT_COLUMN_HEADERS.time);
+  
+  // If we found at least these critical columns, consider it a match
+  return dateIndex !== -1 && orgIndex !== -1 && timeIndex !== -1;
+}
+
+// Process data specifically for the format in the provided spreadsheet image
+function processExactSpreadsheetFormat(rawData: unknown[], headerRowIndex: number, resolve: (bookings: RoomBooking[]) => void) {
+  // Convert headers to strings for matching
+  const headerRow = rawData[headerRowIndex] as unknown[];
+  const headers = headerRow.map(h => h ? String(h).trim() : '');
+  
+  // Find indexes for all our columns
+  const columnIndexes = {
+    date: headers.indexOf(EXACT_COLUMN_HEADERS.date),
+    organization: headers.indexOf(EXACT_COLUMN_HEADERS.organization),
+    station: headers.indexOf(EXACT_COLUMN_HEADERS.station), 
+    location: headers.indexOf(EXACT_COLUMN_HEADERS.location),
+    time: headers.indexOf(EXACT_COLUMN_HEADERS.time),
+    setupGuide: headers.indexOf(EXACT_COLUMN_HEADERS.setupGuide),
+    contactInfo: headers.indexOf(EXACT_COLUMN_HEADERS.contactInfo),
+    color: headers.indexOf(EXACT_COLUMN_HEADERS.color)
+  };
+  
+  console.log("Column indexes from exact header match:", columnIndexes);
+  
+  // Process data rows
+  const bookings: RoomBooking[] = [];
+  
+  for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+    const row = rawData[i] as any[];
+    
+    // Skip empty rows
+    if (!Array.isArray(row) || row.filter(Boolean).length < 2) continue;
+    
+    console.log(`Processing row ${i}:`, row);
+    
+    // Extract and normalize date
+    let dateValue = columnIndexes.date !== -1 ? row[columnIndexes.date] : '';
+    let date = '';
+    try {
+      date = normalizeDate(String(dateValue));
+      console.log("Normalized date:", date, "from", dateValue);
+    } catch (error) {
+      console.error("Date normalization failed:", error);
+      continue; // Skip rows with invalid dates
+    }
+    
+    if (!date) {
+      console.log("Skipping row with missing date");
+      continue;
+    }
+    
+    // Extract and normalize time
+    let timeValue = columnIndexes.time !== -1 ? String(row[columnIndexes.time] || '') : '';
+    let startTime = '09:00'; // Default start time
+    let endTime = '17:00';   // Default end time
+    
+    if (timeValue) {
+      try {
+        const times = extractTimeRange(timeValue);
+        startTime = times.startTime || startTime;
+        endTime = times.endTime || endTime;
+        console.log("Extracted times:", startTime, endTime, "from", timeValue);
+      } catch (error) {
+        console.error("Time extraction failed:", error);
+        // Continue with defaults
+      }
+    }
+    
+    // Determine room name from location and station
+    let roomName = 'Unknown Room';
+    if (columnIndexes.location !== -1 && row[columnIndexes.location]) {
+      roomName = String(row[columnIndexes.location]);
+      
+      // If we also have a station, combine them
+      if (columnIndexes.station !== -1 && row[columnIndexes.station]) {
+        roomName = `${row[columnIndexes.station]} - ${roomName}`;
+      }
+    } else if (columnIndexes.station !== -1 && row[columnIndexes.station]) {
+      roomName = String(row[columnIndexes.station]);
+    }
+    
+    // Get organization name
+    const bookedBy = columnIndexes.organization !== -1 ? String(row[columnIndexes.organization] || 'Unknown') : 'Unknown';
+    
+    // Get setup guide as purpose
+    const purpose = columnIndexes.setupGuide !== -1 ? String(row[columnIndexes.setupGuide] || 'No description') : 'No description';
+    
+    // Get color
+    const colorValue = columnIndexes.color !== -1 ? normalizeColor(String(row[columnIndexes.color] || '')) : '';
+    
+    // Create booking object
+    const booking: RoomBooking = {
+      id: uuidv4(),
+      roomName,
+      date,
+      startTime,
+      endTime,
+      bookedBy,
+      purpose,
+      status: 'confirmed',
+      color: colorValue || getRowColor(i)
+    };
+    
+    // Add optional contact information if available
+    if (columnIndexes.contactInfo !== -1 && row[columnIndexes.contactInfo]) {
+      booking.purpose += `\nContact: ${row[columnIndexes.contactInfo]}`;
+    }
+    
+    bookings.push(booking);
+    console.log("Created booking:", booking);
+  }
+  
+  console.log(`Parsed ${bookings.length} bookings from the spreadsheet`);
+  resolve(bookings);
+}
 
 // Helper function to get colors based on row number (for striped effect)
 function getRowColor(rowIndex: number): string {

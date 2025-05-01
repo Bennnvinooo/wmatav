@@ -1,4 +1,3 @@
-
 import { format } from 'date-fns';
 
 // Parse month names to numbers
@@ -60,7 +59,7 @@ export const normalizeDate = (dateValue: string | number): string => {
     }
   }
   
-  // Try to parse with Date constructor
+  // Try formats like "MM/DD/YYYY" or "YYYY-MM-DD"
   try {
     const parsedDate = new Date(dateStr);
     if (!isNaN(parsedDate.getTime())) {
@@ -70,22 +69,49 @@ export const normalizeDate = (dateValue: string | number): string => {
     console.error(`Failed to parse date with Date constructor: ${dateStr}`, e);
   }
   
-  // Common date formats: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
-  const mmddyyyy = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/;
-  const ddmmyyyy = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/;
+  // Handle numerical dates (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD)
+  const datePattern = /^(\d{1,4})[-\/\.](\d{1,2})[-\/\.](\d{1,4})$/;
+  const dateMatch = dateStr.match(datePattern);
   
-  let match = dateStr.match(mmddyyyy);
-  if (match) {
-    // Assuming MM/DD/YYYY
-    const [_, month, day, year] = match;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }
-  
-  match = dateStr.match(ddmmyyyy);
-  if (match) {
-    // Assuming DD/MM/YYYY
-    const [_, day, month, year] = match;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  if (dateMatch) {
+    let year, month, day;
+    const [, part1, part2, part3] = dateMatch;
+    
+    // Determine the order based on the values and lengths
+    if (part1.length === 4) {
+      // Format is likely YYYY-MM-DD
+      year = parseInt(part1, 10);
+      month = parseInt(part2, 10);
+      day = parseInt(part3, 10);
+    } else if (part3.length === 4) {
+      // Format is likely MM/DD/YYYY or DD/MM/YYYY
+      year = parseInt(part3, 10);
+      
+      // Guess if it's MM/DD or DD/MM based on values
+      const p1 = parseInt(part1, 10);
+      const p2 = parseInt(part2, 10);
+      
+      if (p1 > 12 && p2 <= 12) {
+        // First part is likely a day
+        day = p1;
+        month = p2;
+      } else {
+        // Assume MM/DD format as default
+        month = p1;
+        day = p2;
+      }
+    } else {
+      // Can't determine format with confidence, try standard parsing
+      return '';
+    }
+    
+    // Validate components
+    if (year < 100) year += 2000; // Assume 2-digit years are 2000s
+    if (month < 1 || month > 12) return '';
+    if (day < 1 || day > 31) return '';
+    
+    // Format to YYYY-MM-DD
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
   }
   
   // Return a safe default date if we can't parse the input
@@ -103,7 +129,9 @@ export const extractTimeRange = (timeStr: string): { startTime: string, endTime:
   
   // Handle format like "Meeting Hours: 7:00AM – 5:00PM"
   // Also handle different dash types and spacing
-  const meetingHoursMatch = timeStr.match(/(?:meeting\s+hours|hours)?:?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*[–\-\—]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  const timeRangePattern = /(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*[–\-\—]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i;
+  const meetingHoursMatch = timeStr.match(timeRangePattern);
+  
   if (meetingHoursMatch) {
     const startTimeStr = meetingHoursMatch[1];
     const endTimeStr = meetingHoursMatch[2];
@@ -111,6 +139,27 @@ export const extractTimeRange = (timeStr: string): { startTime: string, endTime:
     return {
       startTime: normalizeTime(startTimeStr),
       endTime: normalizeTime(endTimeStr)
+    };
+  }
+  
+  // Try to find patterns like "9:00 AM" or "9AM" without a range
+  const timePattern = /(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i;
+  const timeMatch = timeStr.match(timePattern);
+  
+  if (timeMatch) {
+    const startTimeStr = timeMatch[1];
+    console.log(`Found single time: ${startTimeStr}`);
+    const startTime = normalizeTime(startTimeStr);
+    
+    // Assume 1 hour duration if only start time is found
+    let endHour = parseInt(startTime.split(':')[0], 10) + 1;
+    if (endHour > 23) endHour = 23;
+    
+    const endTime = `${endHour.toString().padStart(2, '0')}:${startTime.split(':')[1]}`;
+    
+    return {
+      startTime,
+      endTime
     };
   }
   
@@ -167,18 +216,21 @@ export const normalizeTime = (timeValue: string | number): string => {
     return `${hour.toString().padStart(2, '0')}:00`;
   }
   
-  // Parse time ranges like "7:00AM" from "7:00AM - 5:00PM"
-  const singleTime = /^(\d{1,2}):(\d{2})\s*(am|pm)?/i;
-  match = timeStr.match(singleTime);
+  // Handle simple hour without AM/PM (assume working hours 8am-6pm)
+  const hourOnly = /^(\d{1,2})$/;
+  match = timeStr.match(hourOnly);
   if (match) {
-    let [_, hours, minutes, ampm] = match;
-    let hour = parseInt(hours, 10);
-    if (ampm && ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
-    if (ampm && ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
-    return `${hour.toString().padStart(2, '0')}:${minutes}`;
+    const hour = parseInt(match[1], 10);
+    // If hour is small, assume it's during working hours (8am-6pm)
+    if (hour <= 12) {
+      return `${hour.toString().padStart(2, '0')}:00`;
+    } else {
+      // Otherwise use 24-hour format
+      return `${hour.toString().padStart(2, '0')}:00`;
+    }
   }
   
   // Return a safe default time if we can't parse the input
   console.warn(`Could not normalize time: ${timeStr}`);
-  return '09:00'; // Default to 9:00 AM to avoid runtime errors
+  return '09:00'; // Default to 9:00 AM
 };
