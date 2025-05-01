@@ -27,26 +27,37 @@ export const DateFilter: React.FC<DateFilterProps> = ({
     dateRange.start ? new Date(dateRange.start) : undefined
   );
   
-  // Update selectedDate when filterOptions change
+  // Update selectedDate when filterOptions change, but only when the date actually changes
   useEffect(() => {
-    if (dateRange.start) {
+    if (dateRange.start && (!selectedDate || format(selectedDate, 'yyyy-MM-dd') !== dateRange.start)) {
       setSelectedDate(new Date(dateRange.start));
-    } else {
+    } else if (!dateRange.start && selectedDate) {
       setSelectedDate(undefined);
     }
-  }, [dateRange]);
+  }, [dateRange.start]);
   
-  useEffect(() => {
-    if (selectedDate) {
+  // Only update filter options when the selected date changes by user action
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
       setFilterOptions({
         ...filterOptions,
         dateRange: {
-          start: format(selectedDate, 'yyyy-MM-dd'),
-          end: format(selectedDate, 'yyyy-MM-dd')
+          start: format(date, 'yyyy-MM-dd'),
+          end: format(date, 'yyyy-MM-dd')
+        }
+      });
+    } else {
+      setFilterOptions({
+        ...filterOptions,
+        dateRange: {
+          start: null,
+          end: null
         }
       });
     }
-  }, [selectedDate]);
+    setIsCalendarOpen(false);
+  };
   
   return (
     <div>
@@ -70,10 +81,7 @@ export const DateFilter: React.FC<DateFilterProps> = ({
           <Calendar
             mode="single"
             selected={selectedDate}
-            onSelect={(date) => {
-              setSelectedDate(date);
-              setIsCalendarOpen(false);
-            }}
+            onSelect={handleDateSelect}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />
