@@ -1,19 +1,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import { RoomBooking, FilterOptions, ViewMode } from '@/types/booking';
-import FileUpload from '@/components/FileUpload';
-import CalendarView from '@/components/CalendarView';
-import ListView from '@/components/ListView';
-import FilterBar from '@/components/filters/FilterBar';
-import MobileNav from '@/components/MobileNav';
-import { BookingCardSkeleton, CalendarSkeleton, FilterSkeleton, UploadSkeleton } from '@/components/SkeletonLoader';
+import { RoomBooking, FilterOptions } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
 
-const Index = () => {
+export function useBookings() {
   const [bookings, setBookings] = useState<RoomBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showUploadForm, setShowUploadForm] = useState(true);
   
   // Initialize with empty filters
@@ -169,95 +161,28 @@ const Index = () => {
       }
     }
   }, []);
-  
-  if (showUploadForm) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-center mb-2">Room Booking Display System</h1>
-          <p className="text-center text-muted-foreground">Upload an Excel file containing your room booking information</p>
-        </div>
-        
-        {isLoading ? <UploadSkeleton /> : (
-          <FileUpload 
-            onDataLoaded={handleDataLoaded} 
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-          />
-        )}
-      </div>
-    );
-  }
-  
-  return (
-    <div className="container mx-auto pb-20 md:pb-8 px-4 py-4 md:py-8 min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Room Booking Display</h1>
-          <p className="text-sm text-muted-foreground">
-            Last updated: {lastUpdate}
-          </p>
-        </div>
-        
-        <Button onClick={() => setShowUploadForm(true)} className="md:w-auto w-full">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
-          Upload New File
-        </Button>
-      </div>
-      
-      {isLoading ? (
-        <>
-          <FilterSkeleton />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BookingCardSkeleton key={i} />
-            ))}
-          </div>
-        </>
-      ) : (
-        <>
-          <FilterBar 
-            bookings={bookings} 
-            filterOptions={filterOptions} 
-            setFilterOptions={setFilterOptions}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-          />
-          
-          {viewMode === 'calendar' ? (
-            <CalendarView bookings={filteredBookings} filterOptions={filterOptions} />
-          ) : (
-            <ListView bookings={filteredBookings} filterOptions={filterOptions} />
-          )}
-          
-          {filteredBookings.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No bookings match the current filters</p>
-              <Button 
-                variant="outline" 
-                onClick={() => setFilterOptions({
-                  roomName: null,
-                  dateRange: { start: null, end: null },
-                  bookedBy: null,
-                  status: null,
-                  searchTerm: ''
-                })}
-                className="mt-4"
-              >
-                Clear All Filters
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-      
-      <MobileNav 
-        viewMode={viewMode} 
-        setViewMode={setViewMode} 
-        onUploadClick={() => setShowUploadForm(true)} 
-      />
-    </div>
-  );
-};
 
-export default Index;
+  const clearFilters = () => {
+    setFilterOptions({
+      roomName: null,
+      dateRange: { start: null, end: null },
+      bookedBy: null,
+      status: null,
+      searchTerm: ''
+    });
+  };
+
+  return {
+    bookings,
+    filteredBookings,
+    isLoading,
+    setIsLoading,
+    showUploadForm,
+    setShowUploadForm,
+    filterOptions,
+    setFilterOptions,
+    lastUpdate,
+    handleDataLoaded,
+    clearFilters
+  };
+}
