@@ -34,32 +34,40 @@ export const useStatusColors = (status: RoomBooking['status']) => {
 
 export const useCardBackgroundStyle = (booking: RoomBooking) => {
   return useMemo(() => {
-    // First check if the room name contains specific station names
+    // Enhanced logic to detect station names with more variations
     if (booking.roomName) {
-      if (booking.roomName.includes("New Carrolton")) {
-        return { backgroundColor: 'rgba(255, 139, 0, 0.4)' }; // FF8B00 Orange with opacity
+      if (booking.roomName.toLowerCase().includes("new carrolton") || 
+          booking.roomName.toLowerCase().includes("carrolton") || 
+          booking.roomName.toLowerCase().includes("nc")) {
+        return { backgroundColor: 'rgba(255, 139, 0, 0.4)' }; // Orange for New Carrolton
       }
       
-      if (booking.roomName.includes("L'Enfant") || booking.roomName.includes("LEnfant") || booking.roomName.includes("Le Enfant")) {
-        return { backgroundColor: 'rgba(52, 156, 85, 0.4)' }; // 349C55 Green with opacity
+      if (booking.roomName.toLowerCase().includes("l'enfant") || 
+          booking.roomName.toLowerCase().includes("lenfant") || 
+          booking.roomName.toLowerCase().includes("le enfant") ||
+          booking.roomName.toLowerCase().includes("plaza") ||
+          booking.roomName.toLowerCase().includes("lec")) {
+        return { backgroundColor: 'rgba(52, 156, 85, 0.4)' }; // Green for L'Enfant Plaza
       }
       
-      if (booking.roomName.includes("Eisenhower")) {
-        return { backgroundColor: 'rgba(22, 104, 189, 0.4)' }; // 1668BD Blue with opacity
+      if (booking.roomName.toLowerCase().includes("eisenhower") || 
+          booking.roomName.toLowerCase().includes("ica")) {
+        return { backgroundColor: 'rgba(22, 104, 189, 0.4)' }; // Blue for Eisenhower
       }
     }
     
+    // Fallback to color property if room name doesn't match
     if (!booking.color) return {};
     
     const colorValue = booking.color.toLowerCase();
     
     // Map color names to specific RGB values with our new colors
     if (colorValue.includes('blue')) {
-      return { backgroundColor: 'rgba(22, 104, 189, 0.4)' }; // 1668BD Blue with opacity
+      return { backgroundColor: 'rgba(22, 104, 189, 0.4)' }; // Blue
     } else if (colorValue.includes('green')) {
-      return { backgroundColor: 'rgba(52, 156, 85, 0.4)' }; // 349C55 Green with opacity
+      return { backgroundColor: 'rgba(52, 156, 85, 0.4)' }; // Green
     } else if (colorValue.includes('orange') || colorValue.includes('red')) {
-      return { backgroundColor: 'rgba(255, 139, 0, 0.4)' }; // FF8B00 Orange with opacity
+      return { backgroundColor: 'rgba(255, 139, 0, 0.4)' }; // Orange
     } else if (colorValue.includes('purple')) {
       return { backgroundColor: 'rgba(22, 104, 189, 0.3)' }; // Blue variant for purple
     } else if (colorValue.includes('yellow')) {
@@ -67,36 +75,26 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
     }
     
     // Default to blue if color doesn't match any of the specified colors
-    return { backgroundColor: 'rgba(22, 104, 189, 0.4)' }; // 1668BD Blue with opacity
+    return { backgroundColor: 'rgba(22, 104, 189, 0.4)' }; 
   }, [booking.color, booking.roomName]);
 };
 
 export const useContactInfo = (purpose: string) => {
   return useMemo(() => {
-    // Look for email and phone in purpose
+    // Look for email pattern in the purpose text
     const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
-    
-    // Updated phone regex to capture formats like "202 - 555-1234" with various separators
-    const phoneRegex = /(\+\d{1,2}\s)?(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\d{3}[-.\s]+\d{3}[-.\s]+\d{4})/g;
-    
-    // Check for contact format "Contact: Name | Phone | Email"
-    const contactBlockRegex = /Contact:([^|]+)\|([^|]+)\|([^|]+)/i;
-    const contactMatch = purpose.match(contactBlockRegex);
-    
-    if (contactMatch) {
-      // Parse contact information from the special format
-      const name = contactMatch[1].trim();
-      const phone = contactMatch[2].trim();
-      const email = contactMatch[3].trim();
-      
-      return { email, phone, name };
-    }
-    
-    // Fallback to regex extraction if contact block format isn't found
     const email = purpose.match(emailRegex)?.[0] || '';
+    
+    // Look for phone pattern (allowing various formats) in purpose text
+    const phoneRegex = /(\+\d{1,2}\s)?(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\d{3}[-.\s]+\d{3}[-.\s]+\d{4})/g;
     const phone = purpose.match(phoneRegex)?.[0] || '';
     
-    return { email, phone };
+    // Look for name in contact format
+    const contactRegex = /Contact:\s*([^|]+)/i;
+    const nameMatch = purpose.match(contactRegex);
+    const name = nameMatch ? nameMatch[1].trim() : '';
+    
+    return { email, phone, name };
   }, [purpose]);
 };
 

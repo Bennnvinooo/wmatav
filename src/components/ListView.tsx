@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import BookingCard from './BookingCard';
 
@@ -85,7 +85,11 @@ const ListView: React.FC<ListViewProps> = ({ bookings, filterOptions }) => {
           </h3>
           <div className="space-y-3">
             {group.bookings.map(booking => (
-              <BookingCard key={booking.id} booking={booking} />
+              <BookingCard 
+                key={booking.id} 
+                booking={booking}
+                compact={true} 
+              />
             ))}
           </div>
         </div>

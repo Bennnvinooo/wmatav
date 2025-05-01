@@ -3,40 +3,55 @@ import { useState, useEffect, useMemo } from 'react';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
 
-// Sample static booking data for public view
+// Sample static booking data for public view - updated to match the image
 const staticBookings: RoomBooking[] = [
   {
     id: "1",
-    roomName: "Conference Room A",
-    date: "2025-04-01",
+    roomName: "New Carrolton - NC - Multipurpose Rooms: R10.7, R10.8 & R10.9",
+    date: "2025-05-01",
     startTime: "09:00",
-    endTime: "10:30",
-    bookedBy: "John Smith",
-    purpose: "Team Standup",
+    endTime: "17:00",
+    bookedBy: "Mary Johnson",
+    purpose: "Expected Guests: 60 | Set-up Style: CLASSROOM | Catering: YES Contact: Mary Johnson | 202 - 555-1234 | MJohnson@email.com",
     status: "confirmed",
-    equipment: ["Projector", "Whiteboard"]
-  },
-  {
-    id: "2",
-    roomName: "Training Room B",
-    date: "2025-04-01",
-    startTime: "13:00",
-    endTime: "15:00",
-    bookedBy: "Sarah Johnson",
-    purpose: "New Hire Orientation",
-    status: "confirmed",
+    color: "orange",
     equipment: ["Projector", "Audio System"]
   },
   {
-    id: "3",
-    roomName: "Meeting Room C",
-    date: "2025-04-02",
-    startTime: "11:00",
-    endTime: "12:00",
-    bookedBy: "Robert Davis",
-    purpose: "Client Meeting",
+    id: "2",
+    roomName: "Eisenhower - ICA - Multipurpose Rooms: R10.7, R10.8 & R10.9",
+    date: "2025-05-02",
+    startTime: "10:00",
+    endTime: "15:00",
+    bookedBy: "James Wilson",
+    purpose: "Expected Guests: 35 | Set-up Style: CLASSROOM | Catering: YES Contact: James Wilson | 202 - 555-7890 | JWilson@email.com",
     status: "confirmed",
-    equipment: ["Video Conference"]
+    color: "blue",
+    equipment: ["Projector", "Video Conference"]
+  },
+  {
+    id: "3",
+    roomName: "Le Enfant Plaza - LEC - Multipurpose Rooms: R10.7, R10.8 & R10.9",
+    date: "2025-05-03",
+    startTime: "08:00",
+    endTime: "12:00",
+    bookedBy: "Sarah Chen",
+    purpose: "Expected Guests: 25 | Set-up Style: CLASSROOM | Catering: YES Contact: Sarah Chen | 202 - 555-3456 | SChen@email.com",
+    status: "confirmed",
+    color: "green",
+    equipment: ["Audio System", "Video Conference"]
+  },
+  {
+    id: "4",
+    roomName: "Eisenhower - ICA - Multipurpose Rooms: R10.7, R10.8 & R10.9",
+    date: "2025-05-06",
+    startTime: "09:30",
+    endTime: "14:30",
+    bookedBy: "Robert Garcia",
+    purpose: "Expected Guests: 30 | Set-up Style: CLASSROOM | Catering: YES Contact: Robert Garcia | 202 - 555-4567 | RGarcia@email.com",
+    status: "confirmed",
+    color: "blue",
+    equipment: ["Projector", "Whiteboard"]
   }
 ];
 
@@ -126,32 +141,26 @@ export function useBookings() {
       status: null,
       searchTerm: ''
     });
-    
-    // If we have dates in April 2025, set date filter to that month
-    if (data.length > 0) {
-      const aprilData = data.filter(booking => booking.date && booking.date.startsWith('2025-04'));
-      if (aprilData.length > 0) {
-        // Find earliest booking date
-        const earliestDate = aprilData.reduce((earliest, booking) => 
-          booking.date < earliest ? booking.date : earliest, 
-          aprilData[0].date
-        );
-        console.log("Setting filter to earliest date:", earliestDate);
-        setFilterOptions(prev => ({
-          ...prev,
-          dateRange: {
-            start: earliestDate,
-            end: earliestDate
-          }
-        }));
-      }
-    }
   };
   
   // Load saved bookings from localStorage on initial load
   // If none exist, use static bookings for public view
   useEffect(() => {
     setIsLoading(true);
+    
+    // First, check if we're on the public domain
+    const isPublicMode = window.location.hostname === 'wmatav.lovable.app';
+    
+    // For public mode, always use static bookings and don't allow upload
+    if (isPublicMode) {
+      console.log("Public mode detected - using static bookings");
+      setBookings(staticBookings);
+      setShowUploadForm(false);
+      setIsLoading(false);
+      return;
+    }
+    
+    // For non-public mode, try loading from localStorage
     const savedBookings = localStorage.getItem('roomBookings');
     if (savedBookings) {
       try {
@@ -159,64 +168,25 @@ export function useBookings() {
         if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
           console.log("Loaded saved bookings:", parsedBookings.length);
           setBookings(parsedBookings);
-          // Always keep showUploadForm as false since we want to display content
-          
-          // Clear filters before setting any
-          setFilterOptions({
-            roomName: null,
-            dateRange: {
-              start: null,
-              end: null
-            },
-            bookedBy: null,
-            status: null,
-            searchTerm: ''
-          });
-          
-          // Set date filter to April 2025
-          const aprilData = parsedBookings.filter(booking => booking.date && booking.date.startsWith('2025-04'));
-          if (aprilData.length > 0) {
-            // Find earliest booking date
-            const earliestDate = aprilData.reduce((earliest, booking) => 
-              booking.date < earliest ? booking.date : earliest, 
-              aprilData[0].date
-            );
-            console.log("Setting filter to earliest date:", earliestDate);
-            setFilterOptions(prev => ({
-              ...prev,
-              dateRange: {
-                start: earliestDate,
-                end: earliestDate
-              }
-            }));
-          }
           
           toast({
             title: "Loaded saved data",
             description: `${parsedBookings.length} bookings loaded from your last session`,
           });
         } else {
-          // Use static bookings instead
-          console.log("Using static bookings for public view");
+          console.log("No valid bookings found in localStorage, using static bookings");
           setBookings(staticBookings);
-          // Don't show upload form for public view
-          setShowUploadForm(false);
         }
       } catch (error) {
         console.error('Failed to load saved bookings:', error);
-        // Use static bookings instead
-        console.log("Using static bookings for public view after error");
+        console.log("Using static bookings after error");
         setBookings(staticBookings);
-        // Don't show upload form for public view
-        setShowUploadForm(false);
       }
     } else {
-      // Use static bookings for public view
-      console.log("No saved bookings, using static bookings for public view");
+      console.log("No saved bookings, using static bookings");
       setBookings(staticBookings);
-      // Don't show upload form for public view
-      setShowUploadForm(false);
     }
+    
     setIsLoading(false);
   }, []);
 

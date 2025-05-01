@@ -17,7 +17,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = true }) =>
     setExpanded(!expanded);
   };
 
-  // Show compact view by default (changed default to true, and only show expanded when explicitly toggled)
+  // Show compact view by default (always start with compact view)
   if (!expanded) {
     return (
       <BookingCardCompact 

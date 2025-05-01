@@ -22,7 +22,7 @@ const UploadPage: React.FC<UploadPageProps> = ({
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-center mb-2">Room Booking Display System</h1>
+        <h1 className="text-3xl font-bold text-center mb-2">WMATA AV Booking</h1>
         <p className="text-center text-muted-foreground">
           {isPublicMode 
             ? "AV Room Booking Information" 
@@ -33,7 +33,7 @@ const UploadPage: React.FC<UploadPageProps> = ({
       {isLoading ? <UploadSkeleton /> : (
         isPublicMode ? (
           <div className="text-center">
-            <p className="mb-4">This is a public view of the room booking system.</p>
+            <p className="mb-4">This is a public view of the WMATA room booking system.</p>
             <Button 
               onClick={() => window.location.reload()}
               className="mx-auto"
