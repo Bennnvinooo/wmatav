@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 export function useBookings() {
   const [bookings, setBookings] = useState<RoomBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showUploadForm, setShowUploadForm] = useState(true);
+  // Changed the default to false so users see the booking content right away
+  const [showUploadForm, setShowUploadForm] = useState(false);
   
   // Initialize with empty filters
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
@@ -112,6 +112,7 @@ export function useBookings() {
   
   // Load saved bookings from localStorage on initial load
   useEffect(() => {
+    setIsLoading(true);
     const savedBookings = localStorage.getItem('roomBookings');
     if (savedBookings) {
       try {
@@ -119,7 +120,7 @@ export function useBookings() {
         if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
           console.log("Loaded saved bookings:", parsedBookings.length);
           setBookings(parsedBookings);
-          setShowUploadForm(false);
+          // Always keep showUploadForm as false since we want to display content
           
           // Clear filters before setting any
           setFilterOptions({
@@ -155,11 +156,20 @@ export function useBookings() {
             title: "Loaded saved data",
             description: `${parsedBookings.length} bookings loaded from your last session`,
           });
+        } else {
+          // If no valid bookings were found, show the upload form
+          setShowUploadForm(true);
         }
       } catch (error) {
         console.error('Failed to load saved bookings:', error);
+        // If there's an error loading bookings, show the upload form
+        setShowUploadForm(true);
       }
+    } else {
+      // If no saved bookings exist at all, show the upload form
+      setShowUploadForm(true);
     }
+    setIsLoading(false);
   }, []);
 
   const clearFilters = () => {
