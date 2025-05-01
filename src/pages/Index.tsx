@@ -6,6 +6,7 @@ import BookingsDisplay from '@/components/bookings/BookingsDisplay';
 import PageHeader from '@/components/layout/PageHeader';
 import { useBookings } from '@/hooks/use-bookings';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 const Index: React.FC = () => {
   // Get bookings and related state from our custom hook
@@ -31,6 +32,7 @@ const Index: React.FC = () => {
     const hostname = window.location.hostname;
     const isPublic = hostname === 'wmatav.lovable.app';
     setIsPublicMode(isPublic);
+    console.log("Current hostname:", hostname, "Is public mode:", isPublic);
     
     // Show toast only once on initial load in public mode
     if (isPublic && bookings.length === 0) {
@@ -64,13 +66,20 @@ const Index: React.FC = () => {
             lastUpdate={lastUpdate} 
             onUploadClick={handleUploadClick}
             bookings={bookings}
+            isPublicMode={isPublicMode}
           />
           
           {isPublicMode && bookings.length === 0 ? (
-            <div className="mt-8 p-4 bg-muted rounded-lg text-center">
-              <h2 className="text-xl font-semibold mb-2">No booking data available</h2>
-              <p className="mb-4">Please check back later when the administrator has uploaded data.</p>
-              <Button onClick={handleUploadClick} className="mt-2">Admin Login</Button>
+            <div className="mt-8 p-8 bg-muted rounded-lg text-center shadow-sm border border-border">
+              <h2 className="text-2xl font-semibold mb-4">No booking data available</h2>
+              <p className="mb-6 text-muted-foreground">Please check back later when the administrator has uploaded data.</p>
+              <Button 
+                onClick={handleUploadClick} 
+                size="lg"
+                className="font-medium"
+              >
+                Admin Login
+              </Button>
             </div>
           ) : (
             <BookingsDisplay 
@@ -89,26 +98,5 @@ const Index: React.FC = () => {
     </div>
   );
 };
-
-// Add Button component for local usage
-const Button = React.forwardRef<
-  HTMLButtonElement, 
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'default' | 'outline' }
->(({ className = '', variant = 'default', ...props }, ref) => {
-  const baseClass = "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium";
-  const variantClass = variant === 'default' 
-    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-    : "border border-input bg-background hover:bg-accent hover:text-accent-foreground";
-  
-  return (
-    <button
-      className={`${baseClass} ${variantClass} ${className}`}
-      ref={ref}
-      {...props}
-    />
-  );
-});
-
-Button.displayName = 'Button';
 
 export default Index;
