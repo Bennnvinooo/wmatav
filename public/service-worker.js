@@ -7,7 +7,6 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192x192.png',
   '/lovable-uploads/0b5a4a07-66ad-4c95-aacc-126e995404ff.png'
 ];
 
@@ -20,6 +19,8 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
 // Cache and return requests
@@ -31,10 +32,31 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        return fetch(event.request);
-      }
-    )
-  );
+        return fetch(event.request).then(
+          response => {
+            // Check if we received a valid response
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response as it's a stream and can only be consumed once
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      }).catch(() => {
+        // If both cache and network fail, serve a fallback page
+        if (event.request.url.indexOf('.html') > -1) {
+          return caches.match('/index.html');
+        }
+      })
+    );
 });
 
 // Update a service worker
@@ -51,4 +73,6 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  // Claim any clients immediately
+  self.clients.claim();
 });
