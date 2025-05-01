@@ -9,7 +9,7 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
-import { Settings } from 'lucide-react';
+import { Settings, ChevronDown } from 'lucide-react';
 
 interface PageHeaderProps {
   lastUpdate: string;
@@ -57,13 +57,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   
   return <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>
-        <Button 
-          variant="ghost" 
-          className="p-0 h-auto hover:bg-transparent" 
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
-        </Button>
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => setShowSettings(!showSettings)}
+            className="flex items-center gap-1 group hover:text-primary transition-colors focus:outline-none"
+          >
+            <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
+            <ChevronDown className={`h-5 w-5 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
         <p className="text-sm text-muted-foreground">
           Last updated: {lastUpdate}
         </p>
