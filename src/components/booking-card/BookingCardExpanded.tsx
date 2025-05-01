@@ -19,9 +19,25 @@ const BookingCardExpanded: React.FC<BookingCardExpandedProps> = ({
   const statusColors = useStatusColors(booking.status);
   const contactInfo = useContactInfo(booking.purpose);
 
+  const contactDisplay = () => {
+    if (contactInfo.email && contactInfo.phone) {
+      return (
+        <div className="text-sm text-muted-foreground mt-2">
+          <span className="inline-flex items-center">
+            <span className="font-medium">{contactInfo.email}</span>
+            <span className="mx-2 text-muted-foreground">|</span>
+            <span className="font-medium">{contactInfo.phone}</span>
+          </span>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <BookingCardBase booking={booking}>
-      <Card className="hover:shadow-md transition-all duration-300 animate-scale-in shadow-lg border-0 shadow-none bg-transparent">
+      <Card className="hover:shadow-md transition-all duration-300 animate-scale-in shadow-lg border-0 shadow-none bg-transparent rounded-xl">
         <CardHeader className="p-4 pb-1">
           <div className="flex justify-between items-start">
             <CardTitle className="font-medium text-lg">
@@ -61,6 +77,7 @@ const BookingCardExpanded: React.FC<BookingCardExpandedProps> = ({
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 mr-1"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span>{booking.bookedBy}</span>
               </div>
+              {contactDisplay()}
             </div>
           </div>
         </CardContent>

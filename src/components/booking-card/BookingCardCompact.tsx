@@ -18,7 +18,7 @@ const BookingCardCompact: React.FC<BookingCardCompactProps> = ({
 
   return (
     <BookingCardBase booking={booking} onClick={onClick}>
-      <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 border-0 shadow-none bg-transparent">
+      <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 border-0 shadow-none bg-transparent rounded-xl">
         <CardContent className="p-2 flex flex-col">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
