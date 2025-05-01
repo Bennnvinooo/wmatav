@@ -7,6 +7,7 @@ import PageHeader from '@/components/layout/PageHeader';
 import { useBookings } from '@/hooks/use-bookings';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { LockKeyhole } from 'lucide-react';
 
 const Index: React.FC = () => {
   // Get bookings and related state from our custom hook
@@ -72,6 +73,21 @@ const Index: React.FC = () => {
     console.log("Admin access granted via admin login");
   };
 
+  // Always visible admin button  
+  const renderAdminButton = () => {
+    return (
+      <Button
+        onClick={handleAdminLoginClick}
+        variant="outline"
+        size="sm"
+        className="ml-auto"
+      >
+        <LockKeyhole className="mr-2 h-4 w-4" />
+        Admin Mode
+      </Button>
+    );
+  };
+
   return (
     <div className="container mx-auto py-4 px-4">
       {showUploadForm ? (
@@ -82,12 +98,15 @@ const Index: React.FC = () => {
         />
       ) : (
         <>
-          <PageHeader 
-            lastUpdate={lastUpdate} 
-            onUploadClick={handleUploadClick}
-            bookings={bookings}
-            isPublicMode={isPublicMode}
-          />
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <PageHeader 
+              lastUpdate={lastUpdate} 
+              onUploadClick={handleUploadClick}
+              bookings={bookings}
+              isPublicMode={isPublicMode}
+            />
+            {renderAdminButton()}
+          </div>
           
           {isPublicMode && bookings.length === 0 ? (
             <div className="mt-8 p-8 bg-muted rounded-lg text-center shadow-sm border border-border">

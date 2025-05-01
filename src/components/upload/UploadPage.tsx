@@ -91,9 +91,14 @@ const UploadPage: React.FC<UploadPageProps> = ({
     });
   };
 
+  // Admin access handler for PageHeader
+  const handleAdminAccess = () => {
+    setIsSheetOpen(true);
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <PageHeader />
+      <PageHeader onAdminAccess={handleAdminAccess} />
       
       {isLoading ? (
         <UploadSkeleton />
