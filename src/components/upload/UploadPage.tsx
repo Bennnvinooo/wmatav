@@ -18,26 +18,20 @@ const UploadPage: React.FC<UploadPageProps> = ({
   isLoading, 
   setIsLoading 
 }) => {
-  // Simplified check for preview environments
-  const hostname = window.location.hostname;
-  const isPublicMode = hostname === 'wmatav.lovable.app';
-  
-  // In preview environments, we'll default to admin access
+  // Always grant admin access
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
-  // Check for admin status in localStorage
+  // Automatically grant admin access on load
   useEffect(() => {
     try {
-      const adminStatus = localStorage.getItem('wmataAdminAccess');
-      if (adminStatus === 'granted') {
-        setIsPasswordCorrect(true);
-        console.log("Admin access granted from localStorage");
-      }
+      localStorage.setItem('wmataAdminAccess', 'granted');
+      setIsPasswordCorrect(true);
+      console.log("Admin access automatically granted");
     } catch (error) {
-      console.error("Error checking admin status:", error);
-      // In preview, default to admin access
+      console.error("Error setting admin access:", error);
+      // Still grant access even if localStorage fails
       setIsPasswordCorrect(true);
     }
   }, []);
@@ -62,7 +56,7 @@ const UploadPage: React.FC<UploadPageProps> = ({
     }
   };
 
-  // Direct access option for admins - always enabled in preview
+  // Direct access option for admins
   const handleDirectAccess = () => {
     setIsPasswordCorrect(true);
     try {
@@ -97,31 +91,17 @@ const UploadPage: React.FC<UploadPageProps> = ({
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-4">
       <PageHeader onAdminAccess={handleAdminAccess} />
       
       {isLoading ? (
         <UploadSkeleton />
       ) : (
-        <>
-          {!isPasswordCorrect ? (
-            <AccessCard 
-              isPublicMode={isPublicMode}
-              isSheetOpen={isSheetOpen}
-              setIsSheetOpen={setIsSheetOpen}
-              onRefresh={handleRefresh}
-              onAuthenticate={handleAuthenticate}
-              onDirectAccess={handleDirectAccess}
-              onEmergencyAccess={handleEmergencyAccess}
-            />
-          ) : (
-            <FileUpload 
-              onDataLoaded={handleDataLoaded} 
-              isLoading={isLoading}
-              setIsLoading={setIsLoading}
-            />
-          )}
-        </>
+        <FileUpload 
+          onDataLoaded={handleDataLoaded} 
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+        />
       )}
     </div>
   );

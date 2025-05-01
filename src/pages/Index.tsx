@@ -28,29 +28,16 @@ const Index: React.FC = () => {
   const { toast } = useToast();
   const [isPublicMode, setIsPublicMode] = useState(false);
   
-  // Simplified hostname check to fix preview issues
+  // Always enable upload form by default - no public mode restrictions
   useEffect(() => {
+    // Force upload form to show by default
+    setShowUploadForm(true);
+    
+    // Always grant admin access
     try {
-      // For testing in preview, default to admin mode
-      const hostname = window.location.hostname;
-      console.log("Current hostname:", hostname);
-      
-      // Simpler check - only set public mode for specific domains
-      const isPublic = hostname === 'wmatav.lovable.app';
-      setIsPublicMode(isPublic);
-      console.log("Is public mode:", isPublic);
-      
-      if (isPublic && bookings.length === 0) {
-        toast({
-          title: "Public View Mode",
-          description: "Please login or check back when the administrator has uploaded data.",
-          duration: 5000
-        });
-      }
+      localStorage.setItem('wmataAdminAccess', 'granted');
     } catch (error) {
-      console.error("Error checking hostname:", error);
-      // Default to admin mode if there's an error
-      setIsPublicMode(false);
+      console.error("Error storing admin access:", error);
     }
   }, []);
   
@@ -60,7 +47,7 @@ const Index: React.FC = () => {
   // Handler for upload button click
   const handleUploadClick = () => {
     setShowUploadForm(true);
-    // Grant direct admin access for admin users
+    // Grant direct admin access for all users
     localStorage.setItem('wmataAdminAccess', 'granted');
     console.log("Admin access granted via upload button");
   };
@@ -88,14 +75,27 @@ const Index: React.FC = () => {
     );
   };
 
+  // Handler to view bookings
+  const handleViewBookings = () => {
+    setShowUploadForm(false);
+  };
+
   return (
     <div className="container mx-auto py-4 px-4">
       {showUploadForm ? (
-        <UploadPage 
-          handleDataLoaded={handleDataLoaded} 
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-        />
+        <>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-3xl font-bold">WMATA AV Booking</h1>
+            {bookings.length > 0 && (
+              <Button onClick={handleViewBookings}>View Bookings</Button>
+            )}
+          </div>
+          <UploadPage 
+            handleDataLoaded={handleDataLoaded} 
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+          />
+        </>
       ) : (
         <>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
