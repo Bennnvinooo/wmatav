@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import BookingCard from './BookingCard';
 
@@ -22,6 +22,8 @@ const ListView: React.FC<ListViewProps> = ({ bookings, filterOptions }) => {
     });
     
     sortedBookings.forEach(booking => {
+      if (!booking.date) return; // Skip bookings with invalid dates
+      
       if (!groups[booking.date]) {
         groups[booking.date] = [];
       }
@@ -49,12 +51,37 @@ const ListView: React.FC<ListViewProps> = ({ bookings, filterOptions }) => {
     );
   }
   
+  // Format the date safely to avoid invalid date errors
+  const formatDateSafely = (dateStr: string) => {
+    try {
+      // Check if it's a valid ISO date string format (YYYY-MM-DD)
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) {
+        return dateStr; // Return the original string if it's not in expected format
+      }
+      
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // JS months are 0-based
+      const day = parseInt(parts[2], 10);
+      
+      if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        return dateStr;
+      }
+      
+      const date = new Date(year, month, day);
+      return format(date, 'EEEE, MMMM d, yyyy');
+    } catch (error) {
+      console.error("Error formatting date:", dateStr, error);
+      return dateStr;
+    }
+  };
+  
   return (
     <div className="space-y-8">
       {groupedBookingsArray.map(group => (
         <div key={group.date} className="space-y-4">
           <h3 className="sticky top-0 z-10 bg-background py-2 text-lg font-semibold border-b">
-            {format(parseISO(group.date), 'EEEE, MMMM d, yyyy')}
+            {formatDateSafely(group.date)}
           </h3>
           <div className="space-y-3">
             {group.bookings.map(booking => (
