@@ -34,18 +34,26 @@ export const normalizeDate = (dateValue: string | number): string => {
   // Handle string dates in various formats
   const dateStr = String(dateValue).trim();
   
+  console.log("Normalizing date:", dateStr);
+  
   // Try to handle formats like "Monday April 14th 2025"
   const dayMonthPattern = /(?:mon|tues|wednes|thurs|fri|satur|sun)?day\s+(\w+)\s+(\d{1,2})(?:st|nd|rd|th)?\s+(\d{4})/i;
   const dayMonthMatch = dateStr.match(dayMonthPattern);
   if (dayMonthMatch) {
-    const [, monthName, day, year] = dayMonthMatch;
+    const [, monthName, dayStr, yearStr] = dayMonthMatch;
     const month = parseMonthName(monthName);
+    const day = parseInt(dayStr, 10);
+    const year = parseInt(yearStr, 10);
     
-    if (month !== -1) {
+    console.log(`Parsed day pattern: ${monthName}(${month}) ${day}, ${year}`);
+    
+    if (month !== -1 && !isNaN(day) && !isNaN(year)) {
       try {
         // Create a date object and format it as YYYY-MM-DD
-        const date = new Date(parseInt(year), month, parseInt(day));
-        return format(date, 'yyyy-MM-dd');
+        const date = new Date(year, month, day);
+        const formatted = format(date, 'yyyy-MM-dd');
+        console.log("Successfully formatted date:", formatted);
+        return formatted;
       } catch (e) {
         console.error(`Failed to parse date: ${dateStr}`, e);
       }
@@ -81,7 +89,6 @@ export const normalizeDate = (dateValue: string | number): string => {
   }
   
   // Return a safe default date if we can't parse the input
-  // Using the current date as fallback to avoid runtime errors
   console.warn(`Could not normalize date: ${dateStr}`);
   const today = new Date();
   return format(today, 'yyyy-MM-dd');
@@ -92,6 +99,7 @@ export const extractTimeRange = (timeStr: string): { startTime: string, endTime:
   if (!timeStr) return { startTime: '', endTime: '' };
   
   timeStr = timeStr.toLowerCase();
+  console.log("Extracting time range from:", timeStr);
   
   // Handle format like "Meeting Hours: 7:00AM – 5:00PM"
   // Also handle different dash types and spacing
@@ -99,6 +107,7 @@ export const extractTimeRange = (timeStr: string): { startTime: string, endTime:
   if (meetingHoursMatch) {
     const startTimeStr = meetingHoursMatch[1];
     const endTimeStr = meetingHoursMatch[2];
+    console.log(`Found time range: start=${startTimeStr}, end=${endTimeStr}`);
     return {
       startTime: normalizeTime(startTimeStr),
       endTime: normalizeTime(endTimeStr)
@@ -106,12 +115,15 @@ export const extractTimeRange = (timeStr: string): { startTime: string, endTime:
   }
   
   // If we can't extract a range, provide safe default values
+  console.log("Could not extract time range, using defaults");
   return { startTime: '09:00', endTime: '10:00' };
 };
 
 // Normalize time format to HH:MM (24-hour)
 export const normalizeTime = (timeValue: string | number): string => {
   if (!timeValue) return '';
+  
+  console.log("Normalizing time:", timeValue);
   
   // If it's an Excel time number (fraction of 24 hours)
   if (typeof timeValue === 'number') {

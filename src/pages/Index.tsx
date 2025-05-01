@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { RoomBooking, FilterOptions, ViewMode } from '@/types/booking';
 import FileUpload from '@/components/FileUpload';
@@ -15,11 +14,15 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showUploadForm, setShowUploadForm] = useState(true);
+  
+  // Set initial date range to April 2025 since that's when the sample data is from
+  const initialApril2025 = new Date(2025, 3, 15); // April 15, 2025
+  
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     roomName: null,
     dateRange: {
-      start: null,
-      end: null
+      start: initialApril2025.toISOString().split('T')[0], // April 2025
+      end: initialApril2025.toISOString().split('T')[0]
     },
     bookedBy: null,
     status: null,
@@ -35,6 +38,8 @@ const Index = () => {
   // Filter bookings based on filter options
   const filteredBookings = useMemo(() => {
     if (bookings.length === 0) return [];
+    
+    console.log("Filtering bookings with options:", filterOptions);
     
     return bookings.filter(booking => {
       // Filter by room name
@@ -75,10 +80,31 @@ const Index = () => {
   }, [bookings, filterOptions]);
   
   const handleDataLoaded = (data: RoomBooking[]) => {
+    console.log("Data loaded:", data.length, "bookings");
     setBookings(data);
     setShowUploadForm(false);
     localStorage.setItem('roomBookings', JSON.stringify(data));
     localStorage.setItem('lastUpdate', new Date().toISOString());
+    
+    // If we have dates in April 2025, set date filter to that month
+    if (data.length > 0) {
+      const aprilData = data.filter(booking => booking.date && booking.date.startsWith('2025-04'));
+      if (aprilData.length > 0) {
+        // Find earliest booking date
+        const earliestDate = aprilData.reduce((earliest, booking) => 
+          booking.date < earliest ? booking.date : earliest, 
+          aprilData[0].date
+        );
+        console.log("Setting filter to earliest date:", earliestDate);
+        setFilterOptions(prev => ({
+          ...prev,
+          dateRange: {
+            start: earliestDate,
+            end: earliestDate
+          }
+        }));
+      }
+    }
   };
   
   // Load saved bookings from localStorage on initial load
@@ -88,8 +114,28 @@ const Index = () => {
       try {
         const parsedBookings = JSON.parse(savedBookings) as RoomBooking[];
         if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
+          console.log("Loaded saved bookings:", parsedBookings.length);
           setBookings(parsedBookings);
           setShowUploadForm(false);
+          
+          // Set date filter to April 2025
+          const aprilData = parsedBookings.filter(booking => booking.date && booking.date.startsWith('2025-04'));
+          if (aprilData.length > 0) {
+            // Find earliest booking date
+            const earliestDate = aprilData.reduce((earliest, booking) => 
+              booking.date < earliest ? booking.date : earliest, 
+              aprilData[0].date
+            );
+            console.log("Setting filter to earliest date:", earliestDate);
+            setFilterOptions(prev => ({
+              ...prev,
+              dateRange: {
+                start: earliestDate,
+                end: earliestDate
+              }
+            }));
+          }
+          
           toast({
             title: "Loaded saved data",
             description: `${parsedBookings.length} bookings loaded from your last session`,
