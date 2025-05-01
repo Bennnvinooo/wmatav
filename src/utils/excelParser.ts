@@ -12,7 +12,8 @@ const COLUMN_VARIATIONS: ColumnMapping = {
   endTime: ['end time', 'end', 'to', 'until', 'ending at', 'time end', 'finish', 'finish time', 'meeting hours'],
   bookedBy: ['booked by', 'organizer', 'booking person', 'booker', 'reserved by', 'host', 'department', 'team', 'organization', 'organization/group'],
   purpose: ['purpose', 'reason', 'description', 'meeting title', 'event name', 'subject', 'title', 'about', 'set-up guide'],
-  status: ['status', 'booking status', 'state', 'condition']
+  status: ['status', 'booking status', 'state', 'condition'],
+  color: ['color', 'colour', 'background', 'highlight']
 };
 
 // Function to find the best match column for a field
@@ -121,7 +122,7 @@ const extractTimeRange = (timeStr: string): { startTime: string, endTime: string
   
   // Handle format like "Meeting Hours: 7:00AM – 5:00PM"
   // Also handle different dash types and spacing
-  const meetingHoursMatch = timeStr.match(/(?:meeting\s+hours|hours):?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*[–\-\—]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  const meetingHoursMatch = timeStr.match(/(?:meeting\s+hours|hours)?:?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*[–\-\—]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
   if (meetingHoursMatch) {
     const startTimeStr = meetingHoursMatch[1];
     const endTimeStr = meetingHoursMatch[2];
@@ -212,6 +213,44 @@ const normalizeStatus = (statusValue: string): 'confirmed' | 'pending' | 'cancel
   }
 };
 
+// Convert a color name or hex code to valid CSS color
+const normalizeColor = (colorValue: string): string => {
+  if (!colorValue) return '';
+  
+  const colorStr = String(colorValue).trim().toLowerCase();
+  
+  // If it's already a hex code
+  if (colorStr.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)) {
+    return colorStr;
+  }
+  
+  // Map common color names to hex codes
+  const colorMap: Record<string, string> = {
+    'red': '#FF0000',
+    'green': '#008000',
+    'blue': '#0000FF',
+    'yellow': '#FFFF00',
+    'purple': '#800080',
+    'orange': '#FFA500',
+    'pink': '#FFC0CB',
+    'brown': '#A52A2A',
+    'gray': '#808080',
+    'grey': '#808080',
+    'black': '#000000',
+    'white': '#FFFFFF',
+    'cyan': '#00FFFF',
+    'magenta': '#FF00FF',
+    'lime': '#00FF00',
+    'olive': '#808000',
+    'teal': '#008080',
+    'navy': '#000080',
+    'maroon': '#800000',
+    'gold': '#FFD700'
+  };
+  
+  return colorMap[colorStr] || '';
+};
+
 export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -264,6 +303,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           bookedBy: findMatchingColumn(headers, COLUMN_VARIATIONS.bookedBy),
           purpose: findMatchingColumn(headers, COLUMN_VARIATIONS.purpose),
           status: findMatchingColumn(headers, COLUMN_VARIATIONS.status),
+          color: findMatchingColumn(headers, COLUMN_VARIATIONS.color)
         };
         
         console.log("Found column indexes:", columnIndexes);
@@ -296,7 +336,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           const row = rawData[i] as any[];
           
           // Skip empty rows
-          if (!Array.isArray(row) || row.filter(Boolean).length < 3) continue;
+          if (!Array.isArray(row) || row.filter(Boolean).length < 2) continue;
           
           const roomName = columnIndexes.roomName !== -1 ? String(row[columnIndexes.roomName] || '') : 'Unknown';
           let date = '';
@@ -327,12 +367,15 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
             endTime = '10:00';
           }
           
+          // Add color handling
+          const colorValue = columnIndexes.color !== -1 ? normalizeColor(String(row[columnIndexes.color] || '')) : '';
+          
           // Skip rows with missing essential data
-          if (!roomName || !date) continue;
+          if (!date) continue; // Only require date to be present
           
           const booking: RoomBooking = {
             id: uuidv4(),
-            roomName,
+            roomName: roomName || 'Unknown Room',
             date,
             startTime,
             endTime,
@@ -340,7 +383,8 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
             purpose: columnIndexes.purpose !== -1 ? String(row[columnIndexes.purpose] || 'No description') : 'No description',
             status: columnIndexes.status !== -1 
               ? normalizeStatus(String(row[columnIndexes.status] || ''))
-              : 'confirmed'
+              : 'confirmed',
+            color: colorValue
           };
           
           bookings.push(booking);
@@ -363,10 +407,10 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
 
 export const generateSampleFile = (): Blob => {
   const sampleData = [
-    ['Date', 'Organization/Group', 'Station', 'Location', 'Meeting Hours', 'Set-up Guide', 'Coordinator Contact Information', 'Color'],
-    ['Monday May 14th', 'SAFETY CERTIFICATION TRAINING', 'New Carrolton', 'NC - Multipurpose Rooms: 101-17, 101-18 & 101-19', 'Meeting Hours: 7:00AM – 5:00PM', 'Expected Guests: 40\nSet-up Style: CLASSROOM\nSet-up Time: 6:00AM', 'Alvin Addison | 202 – 381-8266\nAAddison@wmata.com', ''],
-    ['Tuesday May 15th', 'METRO TRANSIT POLICE', 'College Park', 'CP - Room 112A', 'Meeting Hours: 9:00AM – 12:00PM', 'Expected Guests: 15\nSet-up Style: CLASSROOM\nSet-up Time: 8:00AM', 'Sarah Johnson | 202-555-1234\nSJohnson@wmata.com', ''],
-    ['Wednesday May 16th', 'IT DEPARTMENT', 'Greenbelt', 'GB - Conference Room 203', 'Meeting Hours: 1:00PM – 3:00PM', 'Expected Guests: 10\nSet-up Style: BOARDROOM\nSet-up Time: 12:00PM', 'Michael Chen | 202-555-7890\nMChen@wmata.com', ''],
+    ['Date', 'Organization/Group', 'Station', 'Location', 'Time', 'Set-up Guide', 'Coordinator Contact Information', 'Color'],
+    ['Monday May 14th', 'SAFETY CERTIFICATION TRAINING', 'New Carrolton', 'NC - Multipurpose Rooms: 101-17, 101-18 & 101-19', '7:00AM – 5:00PM', 'Expected Guests: 40\nSet-up Style: CLASSROOM\nSet-up Time: 6:00AM', 'Alvin Addison | 202 – 381-8266\nAAddison@wmata.com', 'Blue'],
+    ['Tuesday May 15th', 'METRO TRANSIT POLICE', 'College Park', 'CP - Room 112A', '9:00AM – 12:00PM', 'Expected Guests: 15\nSet-up Style: CLASSROOM\nSet-up Time: 8:00AM', 'Sarah Johnson | 202-555-1234\nSJohnson@wmata.com', 'Green'],
+    ['Wednesday May 16th', 'IT DEPARTMENT', 'Greenbelt', 'GB - Conference Room 203', '1:00PM – 3:00PM', 'Expected Guests: 10\nSet-up Style: BOARDROOM\nSet-up Time: 12:00PM', 'Michael Chen | 202-555-7890\nMChen@wmata.com', 'Red'],
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(sampleData);

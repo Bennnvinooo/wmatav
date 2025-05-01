@@ -46,7 +46,7 @@ const ListView: React.FC<ListViewProps> = ({ bookings, filterOptions }) => {
   if (bookings.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">No bookings match the current filters</p>
+        <p className="text-muted-foreground">No bookings found</p>
       </div>
     );
   }

@@ -1,4 +1,3 @@
-
 export interface RoomBooking {
   id: string;
   roomName: string;
@@ -8,6 +7,7 @@ export interface RoomBooking {
   bookedBy: string;
   purpose: string;
   status: 'confirmed' | 'pending' | 'cancelled';
+  color?: string; // Optional color value
 }
 
 export interface ColumnMapping {
@@ -18,6 +18,7 @@ export interface ColumnMapping {
   bookedBy: string[];
   purpose: string[];
   status: string[];
+  color: string[];
 }
 
 export type ViewMode = 'calendar' | 'list';
