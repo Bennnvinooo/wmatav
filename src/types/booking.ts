@@ -8,6 +8,7 @@ export interface RoomBooking {
   purpose: string;
   status: 'confirmed' | 'pending' | 'cancelled';
   color?: string; // Optional color value
+  equipment?: string[]; // Added equipment as an optional string array
 }
 
 export interface ColumnMapping {
