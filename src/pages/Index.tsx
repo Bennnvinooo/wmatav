@@ -26,7 +26,6 @@ const Index: React.FC = () => {
   } = useBookings();
   
   const { toast } = useToast();
-  const [isPublicMode, setIsPublicMode] = useState(false);
   
   // Force show upload form on initial load
   useEffect(() => {
@@ -37,10 +36,6 @@ const Index: React.FC = () => {
     try {
       localStorage.setItem('wmataAdminAccess', 'granted');
       console.log("Index: Admin access granted on load");
-      toast({
-        title: "Upload Ready",
-        description: "You can now upload your Excel file."
-      });
     } catch (error) {
       console.error("Error storing admin access:", error);
     }
@@ -55,33 +50,6 @@ const Index: React.FC = () => {
     // Grant direct admin access for all users
     localStorage.setItem('wmataAdminAccess', 'granted');
     console.log("Admin access granted via upload button");
-  };
-
-  // Handler for admin login click
-  const handleAdminLoginClick = () => {
-    setShowUploadForm(true);
-    // Grant admin access when clicking admin login
-    localStorage.setItem('wmataAdminAccess', 'granted');
-    console.log("Admin access granted via admin login");
-    toast({
-      title: "Upload Access Granted",
-      description: "You can now upload booking data."
-    });
-  };
-
-  // Always visible admin button  
-  const renderAdminButton = () => {
-    return (
-      <Button
-        onClick={handleAdminLoginClick}
-        variant="outline"
-        size="sm"
-        className="ml-auto"
-      >
-        <LockKeyhole className="mr-2 h-4 w-4" />
-        Admin Mode
-      </Button>
-    );
   };
 
   // Handler to view bookings
@@ -112,9 +80,7 @@ const Index: React.FC = () => {
               lastUpdate={lastUpdate} 
               onUploadClick={handleUploadClick}
               bookings={bookings}
-              isPublicMode={isPublicMode}
             />
-            {renderAdminButton()}
           </div>
           
           <BookingsDisplay 

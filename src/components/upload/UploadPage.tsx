@@ -17,7 +17,6 @@ const UploadPage: React.FC<UploadPageProps> = ({
   isLoading, 
   setIsLoading 
 }) => {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
   // Automatically grant admin access on mount
