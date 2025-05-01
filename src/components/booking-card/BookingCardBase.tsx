@@ -40,13 +40,13 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
         return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Orange for New Carrolton
       }
       
-      // Updated specific colors for other stations
-      if (booking.roomName.includes("L'Enfant") || booking.roomName.includes("LEnfant")) {
-        return { backgroundColor: 'rgba(16, 185, 129, 0.3)' }; // Green for L'Enfant
+      // Colors to match the provided image
+      if (booking.roomName.includes("L'Enfant") || booking.roomName.includes("LEnfant") || booking.roomName.includes("Le Enfant")) {
+        return { backgroundColor: 'rgba(173, 216, 230, 0.5)' }; // Light blue for L'Enfant
       }
       
       if (booking.roomName.includes("Eisenhower")) {
-        return { backgroundColor: 'rgba(0, 0, 205, 0.3)' }; // Royal Blue for Eisenhower
+        return { backgroundColor: 'rgba(221, 160, 221, 0.5)' }; // Light purple for Eisenhower
       }
     }
     
@@ -56,7 +56,7 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
     
     // Map color names to specific RGB values
     if (colorValue.includes('blue')) {
-      return { backgroundColor: 'rgba(30, 174, 219, 0.3)' }; // Bright Blue with 0.3 opacity
+      return { backgroundColor: 'rgba(173, 216, 230, 0.5)' }; // Light Blue with 0.5 opacity
     } else if (colorValue.includes('green')) {
       return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Soft Green with 0.5 opacity
     } else if (colorValue.includes('orange')) {
@@ -64,13 +64,13 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
     } else if (colorValue.includes('red')) {
       return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Use orange for red
     } else if (colorValue.includes('purple')) {
-      return { backgroundColor: 'rgba(30, 174, 219, 0.3)' }; // Use blue for purple
+      return { backgroundColor: 'rgba(221, 160, 221, 0.5)' }; // Light purple with 0.5 opacity
     } else if (colorValue.includes('yellow')) {
       return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Use green for yellow
     }
     
     // Default to blue if color doesn't match any of the specified colors
-    return { backgroundColor: 'rgba(30, 174, 219, 0.3)' };
+    return { backgroundColor: 'rgba(173, 216, 230, 0.5)' };
   }, [booking.color, booking.roomName]);
 };
 
