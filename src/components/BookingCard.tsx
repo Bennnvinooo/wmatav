@@ -30,7 +30,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
       }
     };
     
-    return colors[booking.status];
+    return colors[booking.status] || colors.pending;
   }, [booking.status]);
   
   return (
