@@ -50,6 +50,15 @@ const Index: React.FC = () => {
   // Handler for upload button click
   const handleUploadClick = () => {
     setShowUploadForm(true);
+    // Grant direct admin access for admin users
+    if (!isPublicMode) {
+      localStorage.setItem('wmataAdminAccess', 'granted');
+    }
+  };
+
+  // Handler for admin login click
+  const handleAdminLoginClick = () => {
+    setShowUploadForm(true);
   };
 
   return (
@@ -74,7 +83,7 @@ const Index: React.FC = () => {
               <h2 className="text-2xl font-semibold mb-4">No booking data available</h2>
               <p className="mb-6 text-muted-foreground">Please check back later when the administrator has uploaded data.</p>
               <Button 
-                onClick={handleUploadClick} 
+                onClick={handleAdminLoginClick} 
                 size="lg"
                 className="font-medium"
               >

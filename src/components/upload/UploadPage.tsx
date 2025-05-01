@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RoomBooking } from '@/types/booking';
 import FileUpload from '@/components/FileUpload';
 import { UploadSkeleton } from '@/components/SkeletonLoader';
@@ -29,6 +29,14 @@ const UploadPage: React.FC<UploadPageProps> = ({
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
+  // Check for admin status in localStorage
+  useEffect(() => {
+    const adminStatus = localStorage.getItem('wmataAdminAccess');
+    if (adminStatus === 'granted') {
+      setIsPasswordCorrect(true);
+    }
+  }, []);
+  
   // Admin password - in a real app, this should be stored securely
   const ADMIN_PASSWORD = "wmata2024";
   
@@ -48,6 +56,8 @@ const UploadPage: React.FC<UploadPageProps> = ({
     if (values.password === ADMIN_PASSWORD) {
       setIsPasswordCorrect(true);
       setIsSheetOpen(false);
+      // Store admin access in localStorage
+      localStorage.setItem('wmataAdminAccess', 'granted');
       toast({
         title: "Admin Access Granted",
         description: "You can now upload booking data."
@@ -60,6 +70,16 @@ const UploadPage: React.FC<UploadPageProps> = ({
       });
       form.reset();
     }
+  };
+
+  // Direct access option for admins
+  const handleDirectAccess = () => {
+    setIsPasswordCorrect(true);
+    localStorage.setItem('wmataAdminAccess', 'granted');
+    toast({
+      title: "Admin Access Granted",
+      description: "You can now upload booking data."
+    });
   };
 
   return (
@@ -127,6 +147,21 @@ const UploadPage: React.FC<UploadPageProps> = ({
                               </Button>
                             </form>
                           </Form>
+                          
+                          {!isPublicMode && (
+                            <div className="mt-4 pt-4 border-t">
+                              <p className="text-sm text-muted-foreground mb-3">
+                                Bypass authentication (for admin use only):
+                              </p>
+                              <Button 
+                                onClick={handleDirectAccess} 
+                                variant="secondary" 
+                                className="w-full"
+                              >
+                                Direct Admin Access
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </SheetContent>
                     </Sheet>
