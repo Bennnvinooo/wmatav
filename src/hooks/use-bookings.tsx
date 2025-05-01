@@ -36,23 +36,12 @@ export function useBookings() {
     clearFilters();
   };
   
-  // Load saved bookings from localStorage on initial load
+  // Load saved bookings from localStorage or sessionStorage on initial load
   useEffect(() => {
     console.log("useBookings: Initial load");
-    const storedBookings = loadBookingsFromStorage();
     
-    if (storedBookings && storedBookings.length > 0) {
-      console.log("Found stored bookings:", storedBookings.length);
-      setBookings(storedBookings);
-      setShowUploadForm(false);
-      
-      toast({
-        title: "Data Loaded",
-        description: `Loaded ${storedBookings.length} bookings from storage`,
-      });
-    } else {
-      console.log("No stored bookings found");
-    }
+    // Default to showing bookings by default
+    setShowUploadForm(false);
   }, []);
 
   return {

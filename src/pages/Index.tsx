@@ -27,10 +27,8 @@ const Index: React.FC = () => {
   
   useEffect(() => {
     console.log("Index page loaded, bookings:", bookings.length);
-    // Ensure we show bookings view by default when data exists
-    if (bookings.length > 0) {
-      setShowUploadForm(false);
-    }
+    // Ensure we show bookings view by default
+    setShowUploadForm(false);
   }, [bookings.length]);
   
   // State for toggling between calendar and list views
