@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 import { RoomBooking } from '@/types/booking';
 import { v4 as uuidv4 } from 'uuid';
@@ -84,7 +83,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
               timeRange: 4,      // "Meeting Hours: 7:00AM – 5:00PM"
               purpose: 5,        // "Expected Guests: 45 | Set-up Style: CLASSROOM | Catering: YES"
               contact: 6,        // "Alvin Addison | 202 – 381 – 8266 | AAddison@wmata.com"
-              color: -1          // Use background color of cell if available
+              color: 7          // Use the color column if available
             };
             
             // Process data rows - skip header row
@@ -131,6 +130,13 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
                 continue;
               }
               
+              // Get color directly from the color column
+              let color = '';
+              if (columnIndexes.color !== -1 && row.length > columnIndexes.color) {
+                color = normalizeColor(String(row[columnIndexes.color] || ''));
+                console.log(`Found color in column ${columnIndexes.color}:`, color);
+              }
+              
               // Create the booking object
               const booking: RoomBooking = {
                 id: uuidv4(),
@@ -142,9 +148,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
                 bookedBy: row[columnIndexes.bookedBy] ? String(row[columnIndexes.bookedBy]) : 'Unknown',
                 purpose: row[columnIndexes.purpose] ? String(row[columnIndexes.purpose]) : 'No description',
                 status: 'confirmed',
-                // Use cell background color from Excel if possible
-                color: row.length > columnIndexes.color && columnIndexes.color >= 0 ? 
-                       normalizeColor(String(row[columnIndexes.color])) : getRowColor(i)
+                color: color || undefined // Only add colors from the spreadsheet
               };
               
               bookings.push(booking);
@@ -229,8 +233,11 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
             endTime = '10:00';
           }
           
-          // Add color handling
-          const colorValue = columnIndexes.color !== -1 ? normalizeColor(String(row[columnIndexes.color] || '')) : '';
+          // Add color handling - but only if it's in the spreadsheet
+          let color = '';
+          if (columnIndexes.color !== -1) {
+            color = normalizeColor(String(row[columnIndexes.color] || ''));
+          }
           
           // Skip rows with missing essential data
           if (!date) continue; // Only require date to be present
@@ -246,7 +253,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
             status: columnIndexes.status !== -1 
               ? normalizeStatus(String(row[columnIndexes.status] || ''))
               : 'confirmed',
-            color: colorValue || getRowColor(i)
+            color: color || undefined // Only use colors from the spreadsheet
           };
           
           bookings.push(booking);
@@ -371,8 +378,12 @@ function processExactSpreadsheetFormat(rawData: unknown[], headerRowIndex: numbe
     // Get setup guide as purpose
     const purpose = columnIndexes.setupGuide !== -1 ? String(row[columnIndexes.setupGuide] || 'No description') : 'No description';
     
-    // Get color
-    const colorValue = columnIndexes.color !== -1 ? normalizeColor(String(row[columnIndexes.color] || '')) : '';
+    // Get color from the color column
+    let color = '';
+    if (columnIndexes.color !== -1 && row[columnIndexes.color]) {
+      color = normalizeColor(String(row[columnIndexes.color]));
+      console.log(`Found color in column ${columnIndexes.color}:`, color);
+    }
     
     // Create booking object
     const booking: RoomBooking = {
@@ -384,7 +395,7 @@ function processExactSpreadsheetFormat(rawData: unknown[], headerRowIndex: numbe
       bookedBy,
       purpose,
       status: 'confirmed',
-      color: colorValue || getRowColor(i)
+      color: color || undefined // Only use colors from the spreadsheet
     };
     
     // Add optional contact information if available

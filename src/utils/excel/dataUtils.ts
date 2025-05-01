@@ -49,5 +49,5 @@ export const normalizeColor = (colorValue: string): string => {
     'gold': '#FFD700'
   };
   
-  return colorMap[colorStr] || '';
-};
+  return colorMap[colorStr] || colorStr; // Return the color name if not found in our map
+}

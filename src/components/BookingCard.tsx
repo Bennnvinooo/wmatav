@@ -37,11 +37,11 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     return colors[booking.status] || colors.pending;
   }, [booking.status]);
   
-  // Generate background color with 30% opacity from booking color
+  // Generate background color from booking color (using only colors from the spreadsheet)
   const cardBackgroundStyle = useMemo(() => {
     if (!booking.color) return {};
     
-    // Convert hex to rgba with 0.3 (30%) opacity
+    // If color exists in the booking data, use it directly with 30% opacity
     if (booking.color.startsWith('#')) {
       let hex = booking.color.slice(1);
       if (hex.length === 3) {
