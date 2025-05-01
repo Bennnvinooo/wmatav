@@ -5,12 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Common column variations for each field
 const COLUMN_VARIATIONS: ColumnMapping = {
-  roomName: ['room', 'room name', 'location', 'venue', 'meeting room', 'space'],
+  roomName: ['room', 'room name', 'location', 'venue', 'meeting room', 'space', 'station'],
   date: ['date', 'booking date', 'meeting date', 'day', 'when'],
-  startTime: ['start time', 'start', 'from', 'begins at', 'beginning', 'time start', 'start at', 'from time'],
+  startTime: ['start time', 'start', 'from', 'begins at', 'beginning', 'time start', 'start at', 'from time', 'time'],
   endTime: ['end time', 'end', 'to', 'until', 'ending at', 'time end', 'finish', 'finish time'],
-  bookedBy: ['booked by', 'organizer', 'booking person', 'booker', 'reserved by', 'host', 'department', 'team'],
-  purpose: ['purpose', 'reason', 'description', 'meeting title', 'event name', 'subject', 'title', 'about'],
+  bookedBy: ['booked by', 'organizer', 'booking person', 'booker', 'reserved by', 'host', 'department', 'team', 'organization', 'organization/group'],
+  purpose: ['purpose', 'reason', 'description', 'meeting title', 'event name', 'subject', 'title', 'about', 'set-up guide'],
   status: ['status', 'booking status', 'state', 'condition']
 };
 
@@ -101,6 +101,17 @@ const normalizeTime = (timeValue: string | number): string => {
     if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
     return `${hour.toString().padStart(2, '0')}:${minutes}`;
   }
+
+  // Parse time ranges like "7:00AM - 5:00PM"
+  const timeRange = /^(\d{1,2}):(\d{2})\s*(am|pm)?(?:\s*-\s*\d{1,2}:\d{2}\s*(am|pm)?)$/i;
+  match = timeStr.match(timeRange);
+  if (match) {
+    let [_, hours, minutes, ampm] = match;
+    let hour = parseInt(hours, 10);
+    if (ampm && ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
+    if (ampm && ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
+    return `${hour.toString().padStart(2, '0')}:${minutes}`;
+  }
   
   // If all else fails, return the original string
   console.warn(`Could not normalize time: ${timeStr}`);
@@ -145,22 +156,25 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
         if (bookingSheet) sheetName = bookingSheet;
         
         const sheet = workbook.Sheets[sheetName];
-        const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[];
         
-        if (rawData.length < 2) {
+        if (!Array.isArray(rawData) || rawData.length < 2) {
           throw new Error('File contains insufficient data');
         }
         
         // Find header row (first non-empty row)
         let headerRowIndex = 0;
         for (let i = 0; i < Math.min(10, rawData.length); i++) {
-          if (rawData[i].filter(Boolean).length > 3) { // At least 3 non-empty cells
+          const row = rawData[i] as unknown[];
+          if (Array.isArray(row) && row.filter(Boolean).length > 3) { // At least 3 non-empty cells
             headerRowIndex = i;
             break;
           }
         }
         
-        const headers = (rawData[headerRowIndex] as string[]).map(h => String(h).toLowerCase().trim());
+        const headers = ((rawData[headerRowIndex] as unknown[]) || []).map(h => 
+          h ? String(h).toLowerCase().trim() : ''
+        );
         
         // Find column indexes for each required field
         const columnIndexes = {
@@ -187,7 +201,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           const row = rawData[i] as any[];
           
           // Skip empty rows
-          if (row.filter(Boolean).length < 3) continue;
+          if (!Array.isArray(row) || row.filter(Boolean).length < 3) continue;
           
           const roomName = columnIndexes.roomName !== -1 ? String(row[columnIndexes.roomName] || '') : 'Unknown';
           const date = columnIndexes.date !== -1 ? normalizeDate(row[columnIndexes.date]) : '';
@@ -230,16 +244,10 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
 
 export const generateSampleFile = (): Blob => {
   const sampleData = [
-    ['Room Name', 'Date', 'Start Time', 'End Time', 'Booked By', 'Purpose', 'Status'],
-    ['Conference Room A', '2025-05-02', '09:00', '10:30', 'Marketing Team', 'Weekly Standup', 'Confirmed'],
-    ['Conference Room A', '2025-05-02', '11:00', '12:00', 'John Smith', 'Client Meeting', 'Confirmed'],
-    ['Board Room', '2025-05-02', '14:00', '16:00', 'Executive Team', 'Quarterly Review', 'Confirmed'],
-    ['Meeting Room 1', '2025-05-03', '10:00', '11:00', 'HR Department', 'Interview', 'Pending'],
-    ['Conference Room B', '2025-05-03', '13:00', '14:30', 'Product Team', 'Product Demo', 'Confirmed'],
-    ['Board Room', '2025-05-03', '15:00', '16:00', 'Finance Team', 'Budget Planning', 'Cancelled'],
-    ['Conference Room A', '2025-05-04', '09:00', '10:00', 'IT Department', 'System Upgrade Briefing', 'Confirmed'],
-    ['Meeting Room 2', '2025-05-04', '11:30', '12:30', 'Design Team', 'UI Review', 'Confirmed'],
-    ['Conference Room B', '2025-05-04', '14:00', '15:30', 'Sales Team', 'Sales Strategy', 'Pending'],
+    ['Date', 'Organization/Group', 'Station', 'Location', 'Time', 'Set-up Guide', 'Coordinator Contact Information', 'Color'],
+    ['Monday May 14th', 'SAFETY CERTIFICATION TRAINING', 'New Carrolton', 'NC - Multipurpose Rooms: 101-17, 101-18 & 101-19', 'Meeting Hours: 7:00AM – 5:00PM', 'Expected Guests: 40\nSet-up Style: CLASSROOM\nSet-up Time: 6:00AM', 'Alvin Addison | 202 – 381-8266\nAAddison@wmata.com', ''],
+    ['Tuesday May 15th', 'METRO TRANSIT POLICE', 'College Park', 'CP - Room 112A', 'Meeting Hours: 9:00AM – 12:00PM', 'Expected Guests: 15\nSet-up Style: CLASSROOM\nSet-up Time: 8:00AM', 'Sarah Johnson | 202-555-1234\nSJohnson@wmata.com', ''],
+    ['Wednesday May 16th', 'IT DEPARTMENT', 'Greenbelt', 'GB - Conference Room 203', 'Meeting Hours: 1:00PM – 3:00PM', 'Expected Guests: 10\nSet-up Style: BOARDROOM\nSet-up Time: 12:00PM', 'Michael Chen | 202-555-7890\nMChen@wmata.com', ''],
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(sampleData);
