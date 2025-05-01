@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const bookerSet = new Set(bookings.map(booking => booking.bookedBy));
     return Array.from(bookerSet).sort();
   }, [bookings]);
+  
+  // Update dateRange when filterOptions change
+  useEffect(() => {
+    if (filterOptions.dateRange.start) {
+      setDateRange(new Date(filterOptions.dateRange.start));
+    } else {
+      setDateRange(undefined);
+    }
+  }, [filterOptions.dateRange]);
   
   useEffect(() => {
     if (dateRange) {

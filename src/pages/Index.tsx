@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { RoomBooking, FilterOptions, ViewMode } from '@/types/booking';
 import FileUpload from '@/components/FileUpload';
@@ -15,14 +16,12 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showUploadForm, setShowUploadForm] = useState(true);
   
-  // Set initial date range to April 2025 since that's when the sample data is from
-  const initialApril2025 = new Date(2025, 3, 15); // April 15, 2025
-  
+  // Initialize with empty filters
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     roomName: null,
     dateRange: {
-      start: initialApril2025.toISOString().split('T')[0], // April 2025
-      end: initialApril2025.toISOString().split('T')[0]
+      start: null,
+      end: null
     },
     bookedBy: null,
     status: null,
@@ -86,6 +85,18 @@ const Index = () => {
     localStorage.setItem('roomBookings', JSON.stringify(data));
     localStorage.setItem('lastUpdate', new Date().toISOString());
     
+    // Clear filters first
+    setFilterOptions({
+      roomName: null,
+      dateRange: {
+        start: null,
+        end: null
+      },
+      bookedBy: null,
+      status: null,
+      searchTerm: ''
+    });
+    
     // If we have dates in April 2025, set date filter to that month
     if (data.length > 0) {
       const aprilData = data.filter(booking => booking.date && booking.date.startsWith('2025-04'));
@@ -117,6 +128,18 @@ const Index = () => {
           console.log("Loaded saved bookings:", parsedBookings.length);
           setBookings(parsedBookings);
           setShowUploadForm(false);
+          
+          // Clear filters before setting any
+          setFilterOptions({
+            roomName: null,
+            dateRange: {
+              start: null,
+              end: null
+            },
+            bookedBy: null,
+            status: null,
+            searchTerm: ''
+          });
           
           // Set date filter to April 2025
           const aprilData = parsedBookings.filter(booking => booking.date && booking.date.startsWith('2025-04'));
