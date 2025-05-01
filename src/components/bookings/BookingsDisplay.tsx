@@ -28,6 +28,8 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
   isLoading,
   clearFilters
 }) => {
+  console.log("BookingsDisplay rendered with:", filteredBookings.length, "filtered bookings from", bookings.length, "total bookings");
+  
   if (isLoading) {
     return (
       <>
@@ -38,6 +40,15 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
           ))}
         </div>
       </>
+    );
+  }
+
+  if (bookings.length === 0) {
+    return (
+      <div className="bg-red-500 text-white p-6 rounded-lg shadow-lg mt-8">
+        <h2 className="text-xl font-bold mb-2">No booking data available</h2>
+        <p className="mb-4">Please check back later when the administrator has uploaded data.</p>
+      </div>
     );
   }
 
@@ -57,7 +68,7 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
         <ListView bookings={filteredBookings} filterOptions={filterOptions} />
       )}
       
-      {filteredBookings.length === 0 && (
+      {filteredBookings.length === 0 && bookings.length > 0 && (
         <div className="text-center py-8">
           <p className="text-muted-foreground">No bookings match the current filters</p>
           <Button 

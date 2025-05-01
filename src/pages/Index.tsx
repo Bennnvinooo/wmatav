@@ -6,8 +6,6 @@ import BookingsDisplay from '@/components/bookings/BookingsDisplay';
 import PageHeader from '@/components/layout/PageHeader';
 import { useBookings } from '@/hooks/use-bookings';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { LockKeyhole } from 'lucide-react';
 
 const Index: React.FC = () => {
   // Get bookings and related state from our custom hook
@@ -27,19 +25,11 @@ const Index: React.FC = () => {
   
   const { toast } = useToast();
   
-  // Force show upload form on initial load
   useEffect(() => {
-    // Always show upload form by default
-    setShowUploadForm(true);
-    
-    // Grant admin access
-    try {
-      localStorage.setItem('wmataAdminAccess', 'granted');
-      console.log("Index: Admin access granted on load");
-    } catch (error) {
-      console.error("Error storing admin access:", error);
-    }
-  }, []);
+    console.log("Index page loaded, bookings:", bookings.length);
+    // Ensure we show bookings view by default
+    setShowUploadForm(false);
+  }, [bookings.length]);
   
   // State for toggling between calendar and list views
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -47,9 +37,6 @@ const Index: React.FC = () => {
   // Handler for upload button click
   const handleUploadClick = () => {
     setShowUploadForm(true);
-    // Grant direct admin access for all users
-    localStorage.setItem('wmataAdminAccess', 'granted');
-    console.log("Admin access granted via upload button");
   };
 
   // Handler to view bookings
@@ -64,7 +51,12 @@ const Index: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold">WMATA AV Booking</h1>
             {bookings.length > 0 && (
-              <Button onClick={handleViewBookings}>View Bookings</Button>
+              <button 
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+                onClick={handleViewBookings}
+              >
+                View Bookings
+              </button>
             )}
           </div>
           <UploadPage 
