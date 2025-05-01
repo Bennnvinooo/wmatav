@@ -1,20 +1,35 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>room-zenith-display-excel</title>
-    <meta name="description" content="Lovable Generated Project" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>WMATA AV Booking</title>
+    <meta name="description" content="WMATA AV Room Booking Management System" />
     <meta name="author" content="Lovable" />
-
-    <meta property="og:title" content="room-zenith-display-excel" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    
+    <!-- PWA meta tags -->
+    <meta name="theme-color" content="#6B46C1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="WMATA AV" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="WMATA AV Booking" />
+    <meta property="og:description" content="WMATA AV Room Booking Management System" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/lovable-uploads/0b5a4a07-66ad-4c95-aacc-126e995404ff.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:site" content="@wmata" />
+    <meta name="twitter:image" content="/lovable-uploads/0b5a4a07-66ad-4c95-aacc-126e995404ff.png" />
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/lovable-uploads/0b5a4a07-66ad-4c95-aacc-126e995404ff.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/lovable-uploads/0b5a4a07-66ad-4c95-aacc-126e995404ff.png" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
   </head>
 
   <body>
@@ -22,5 +37,20 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
