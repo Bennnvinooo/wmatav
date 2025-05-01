@@ -21,7 +21,7 @@ const BookingCardExpanded: React.FC<BookingCardExpandedProps> = ({
 
   return (
     <BookingCardBase booking={booking}>
-      <Card className="hover:shadow-md transition-all duration-300 animate-scale-in shadow-lg border-0 shadow-none">
+      <Card className="hover:shadow-md transition-all duration-300 animate-scale-in shadow-lg border-0 shadow-none bg-transparent">
         <CardHeader className="p-4 pb-1">
           <div className="flex justify-between items-start">
             <CardTitle className="font-medium text-lg">
