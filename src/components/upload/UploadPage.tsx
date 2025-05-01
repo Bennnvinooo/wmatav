@@ -19,6 +19,12 @@ const UploadPage: React.FC<UploadPageProps> = ({
   // Check if we're running in public mode (on wmatav.lovable.app)
   const isPublicMode = window.location.hostname === 'wmatav.lovable.app';
 
+  const handleRefresh = () => {
+    // Clear any cached data to force a fresh load
+    localStorage.removeItem('lastViewedBookings');
+    window.location.reload();
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
@@ -33,9 +39,9 @@ const UploadPage: React.FC<UploadPageProps> = ({
       {isLoading ? <UploadSkeleton /> : (
         isPublicMode ? (
           <div className="text-center">
-            <p className="mb-4">This is a public view of the WMATA room booking system.</p>
+            <p className="mb-4">This is a public view of the WMATA room booking system. The data has not been uploaded yet.</p>
             <Button 
-              onClick={() => window.location.reload()}
+              onClick={handleRefresh}
               className="mx-auto"
             >
               Refresh Data
