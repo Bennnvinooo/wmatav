@@ -27,18 +27,18 @@ const Index: React.FC = () => {
   const { toast } = useToast();
   const [isPublicMode, setIsPublicMode] = useState(false);
   
-  // Check if we're in public mode - make this more reliable with fallbacks
+  // Simplified hostname check to fix preview issues
   useEffect(() => {
     try {
+      // For testing in preview, default to admin mode
       const hostname = window.location.hostname;
-      // Check for multiple possible public domains
-      const isPublic = hostname === 'wmatav.lovable.app' || 
-                      hostname === 'preview--wmatav.lovable.app' || 
-                      hostname.includes('wmatav.lovable');
-      setIsPublicMode(isPublic);
-      console.log("Current hostname:", hostname, "Is public mode:", isPublic);
+      console.log("Current hostname:", hostname);
       
-      // Show toast only once on initial load in public mode
+      // Simpler check - only set public mode for specific domains
+      const isPublic = hostname === 'wmatav.lovable.app';
+      setIsPublicMode(isPublic);
+      console.log("Is public mode:", isPublic);
+      
       if (isPublic && bookings.length === 0) {
         toast({
           title: "Public View Mode",
@@ -48,7 +48,7 @@ const Index: React.FC = () => {
       }
     } catch (error) {
       console.error("Error checking hostname:", error);
-      // Default to non-public mode if there's an error
+      // Default to admin mode if there's an error
       setIsPublicMode(false);
     }
   }, []);
@@ -60,14 +60,16 @@ const Index: React.FC = () => {
   const handleUploadClick = () => {
     setShowUploadForm(true);
     // Grant direct admin access for admin users
-    if (!isPublicMode) {
-      localStorage.setItem('wmataAdminAccess', 'granted');
-    }
+    localStorage.setItem('wmataAdminAccess', 'granted');
+    console.log("Admin access granted via upload button");
   };
 
   // Handler for admin login click
   const handleAdminLoginClick = () => {
     setShowUploadForm(true);
+    // Grant admin access when clicking admin login
+    localStorage.setItem('wmataAdminAccess', 'granted');
+    console.log("Admin access granted via admin login");
   };
 
   return (

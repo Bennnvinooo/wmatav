@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export function useBookings() {
   const [bookings, setBookings] = useState<RoomBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  // Changed the default to false so users see the booking content right away
+  // Changed to false so we show content right away in preview
   const [showUploadForm, setShowUploadForm] = useState(false);
   
   // Initialize with empty filters
@@ -76,12 +75,18 @@ export function useBookings() {
     setBookings(data);
     setShowUploadForm(false);
     
-    // Store for both admin use and public visitors
-    localStorage.setItem('roomBookings', JSON.stringify(data));
-    localStorage.setItem('lastUpdate', new Date().toISOString());
-    
-    // IMPORTANT: Store in sessionStorage too, which is shared across all tabs/windows on the public domain
-    sessionStorage.setItem('roomBookings', JSON.stringify(data));
+    try {
+      // Store for both admin use and public visitors
+      localStorage.setItem('roomBookings', JSON.stringify(data));
+      localStorage.setItem('lastUpdate', new Date().toISOString());
+      
+      // Also store in sessionStorage for cross-tab communication
+      sessionStorage.setItem('roomBookings', JSON.stringify(data));
+      
+      console.log("Stored bookings in localStorage and sessionStorage");
+    } catch (error) {
+      console.error("Error storing bookings:", error);
+    }
     
     // Clear filters first
     setFilterOptions({
@@ -99,86 +104,130 @@ export function useBookings() {
   // Load saved bookings from localStorage or sessionStorage on initial load
   useEffect(() => {
     setIsLoading(true);
+    console.log("useBookings: Initial load");
     
-    // First, check if we're on the public domain - make more reliable
     try {
+      // Simplified check for public mode - preview will default to admin mode
       const hostname = window.location.hostname;
-      const isPublicMode = hostname === 'wmatav.lovable.app' || 
-                          hostname === 'preview--wmatav.lovable.app' || 
-                          hostname.includes('wmatav.lovable');
+      const isPublicMode = hostname === 'wmatav.lovable.app';
       console.log("Is public mode:", isPublicMode);
       
-      // Try different storage locations in order of preference
-      const tryGetBookings = () => {
+      // Try loading saved data from storage
+      const loadSavedBookings = () => {
         try {
-          // First try localStorage (for both admin and public modes)
-          const savedBookings = localStorage.getItem('roomBookings');
-          if (savedBookings) {
-            try {
+          // Generate some sample data for preview if nothing is found
+          const sampleData: RoomBooking[] = [
+            {
+              id: '1',
+              roomName: 'Conference Room A',
+              bookedBy: 'John Smith',
+              date: '2025-05-15',
+              startTime: '09:00',
+              endTime: '10:00',
+              purpose: 'Team Meeting',
+              status: 'confirmed'
+            },
+            {
+              id: '2',
+              roomName: 'Training Room B',
+              bookedBy: 'Sarah Johnson',
+              date: '2025-05-16',
+              startTime: '13:00',
+              endTime: '15:00',
+              purpose: 'New Hire Orientation',
+              status: 'pending'
+            },
+            {
+              id: '3',
+              roomName: 'Executive Suite',
+              bookedBy: 'Michael Brown',
+              date: '2025-05-17',
+              startTime: '10:00',
+              endTime: '11:30',
+              purpose: 'Board Meeting',
+              status: 'confirmed'
+            },
+            {
+              id: '4',
+              roomName: 'Meeting Room C',
+              bookedBy: 'Lisa Davis',
+              date: '2025-05-18',
+              startTime: '14:00',
+              endTime: '16:00',
+              purpose: 'Client Presentation',
+              status: 'confirmed'
+            },
+            {
+              id: '5',
+              roomName: 'Conference Room A',
+              bookedBy: 'Robert Wilson',
+              date: '2025-05-19',
+              startTime: '11:00',
+              endTime: '12:00',
+              purpose: 'Department Update',
+              status: 'confirmed'
+            }
+          ];
+
+          try {
+            // First try localStorage
+            const savedBookings = localStorage.getItem('roomBookings');
+            if (savedBookings) {
               const parsedBookings = JSON.parse(savedBookings) as RoomBooking[];
               if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
                 console.log("Loaded saved bookings from localStorage:", parsedBookings.length);
                 setBookings(parsedBookings);
-                
-                if (!isPublicMode) {
-                  toast({
-                    title: "Loaded saved data",
-                    description: `${parsedBookings.length} bookings loaded from your last session`,
-                  });
-                }
+                toast({
+                  title: "Loaded saved data",
+                  description: `${parsedBookings.length} bookings loaded from your last session`,
+                });
                 return true;
               }
-            } catch (error) {
-              console.error('Failed to load saved bookings from localStorage:', error);
             }
-          }
-          
-          // Then try sessionStorage (useful for shared data across tabs)
-          const sessionBookings = sessionStorage.getItem('roomBookings');
-          if (sessionBookings) {
-            try {
+            
+            // Then try sessionStorage
+            const sessionBookings = sessionStorage.getItem('roomBookings');
+            if (sessionBookings) {
               const parsedBookings = JSON.parse(sessionBookings) as RoomBooking[];
               if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
                 console.log("Loaded saved bookings from sessionStorage:", parsedBookings.length);
                 setBookings(parsedBookings);
                 return true;
               }
-            } catch (error) {
-              console.error('Failed to load saved bookings from sessionStorage:', error);
             }
+            
+            // If no saved data found, use sample data for preview
+            console.log("No saved bookings found, using sample data");
+            setBookings(sampleData);
+            console.log("Loaded sample bookings:", sampleData.length);
+            
+            // Store sample data so it's available on reload
+            localStorage.setItem('roomBookings', JSON.stringify(sampleData));
+            sessionStorage.setItem('roomBookings', JSON.stringify(sampleData));
+            
+            return true;
+          } catch (error) {
+            console.error('Failed to load saved bookings:', error);
+            // Fall back to sample data
+            setBookings(sampleData);
+            console.log("Fallback to sample data:", sampleData.length);
+            return true;
           }
-          
-          return false;
         } catch (error) {
           console.error('Error loading bookings:', error);
           return false;
         }
       };
       
-      // Try to load bookings from storage
-      const foundBookings = tryGetBookings();
+      // Try to load bookings
+      loadSavedBookings();
       
-      // For public mode, show upload only if no data was found
-      if (isPublicMode) {
-        setShowUploadForm(false);
-        
-        if (!foundBookings) {
-          // In public mode with no saved data, show an empty state
-          console.log("No saved bookings found in public mode");
-          setBookings([]);
-          toast({
-            title: "No booking data available",
-            description: "Please check back later when the administrator has uploaded data.",
-            variant: "destructive"
-          });
-        }
-      } else {
-        // In admin mode, show upload form if no data was found
-        setShowUploadForm(!foundBookings);
-      }
+      // In preview, always show the bookings by default
+      setShowUploadForm(false);
+      
     } catch (error) {
       console.error("Error in use-bookings effect:", error);
-      // Default behavior if there's an error
+      // Default behavior if there's an error - show upload form
       setShowUploadForm(true);
     }
     

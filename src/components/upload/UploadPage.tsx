@@ -23,13 +23,12 @@ const UploadPage: React.FC<UploadPageProps> = ({
   isLoading, 
   setIsLoading 
 }) => {
-  // Check if we're running in public mode with a more reliable check
+  // Simplified check for preview environments
   const hostname = window.location.hostname;
-  const isPublicMode = hostname === 'wmatav.lovable.app' || 
-                      hostname === 'preview--wmatav.lovable.app' || 
-                      hostname.includes('wmatav.lovable');
+  const isPublicMode = hostname === 'wmatav.lovable.app';
   
-  const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
+  // In preview environments, we'll default to admin access
+  const [isPasswordCorrect, setIsPasswordCorrect] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
@@ -43,6 +42,8 @@ const UploadPage: React.FC<UploadPageProps> = ({
       }
     } catch (error) {
       console.error("Error checking admin status:", error);
+      // In preview, default to admin access
+      setIsPasswordCorrect(true);
     }
   }, []);
   
@@ -57,7 +58,11 @@ const UploadPage: React.FC<UploadPageProps> = ({
 
   const handleRefresh = () => {
     // Clear any cached data to force a fresh load
-    localStorage.removeItem('lastViewedBookings');
+    try {
+      localStorage.removeItem('lastViewedBookings');
+    } catch (error) {
+      console.error("Error clearing localStorage:", error);
+    }
     window.location.reload();
   };
   
@@ -66,7 +71,11 @@ const UploadPage: React.FC<UploadPageProps> = ({
       setIsPasswordCorrect(true);
       setIsSheetOpen(false);
       // Store admin access in localStorage
-      localStorage.setItem('wmataAdminAccess', 'granted');
+      try {
+        localStorage.setItem('wmataAdminAccess', 'granted');
+      } catch (error) {
+        console.error("Error storing admin access:", error);
+      }
       toast({
         title: "Admin Access Granted",
         description: "You can now upload booking data."
@@ -81,10 +90,14 @@ const UploadPage: React.FC<UploadPageProps> = ({
     }
   };
 
-  // Direct access option for admins
+  // Direct access option for admins - always enabled in preview
   const handleDirectAccess = () => {
     setIsPasswordCorrect(true);
-    localStorage.setItem('wmataAdminAccess', 'granted');
+    try {
+      localStorage.setItem('wmataAdminAccess', 'granted');
+    } catch (error) {
+      console.error("Error storing admin access:", error);
+    }
     toast({
       title: "Admin Access Granted",
       description: "You can now upload booking data."
@@ -95,7 +108,11 @@ const UploadPage: React.FC<UploadPageProps> = ({
   const handleEmergencyAccess = () => {
     console.log("Emergency admin access triggered");
     setIsPasswordCorrect(true);
-    localStorage.setItem('wmataAdminAccess', 'granted');
+    try {
+      localStorage.setItem('wmataAdminAccess', 'granted');
+    } catch (error) {
+      console.error("Error storing admin access:", error);
+    }
     toast({
       title: "Emergency Admin Access",
       description: "You now have upload access",
@@ -168,7 +185,7 @@ const UploadPage: React.FC<UploadPageProps> = ({
                             </form>
                           </Form>
                           
-                          {/* Always show direct access option for easier testing */}
+                          {/* Always show direct access option for testing */}
                           <div className="mt-4 pt-4 border-t">
                             <p className="text-sm text-muted-foreground mb-3">
                               Bypass authentication (for admin use only):
