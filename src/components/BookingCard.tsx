@@ -37,11 +37,24 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     return colors[booking.status] || colors.pending;
   }, [booking.status]);
   
-  // Generate background color from booking color (using only colors from the spreadsheet)
+  // Generate background color from booking color (using blue instead of purple)
   const cardBackgroundStyle = useMemo(() => {
     if (!booking.color) return {};
     
-    // If color exists in the booking data, use it directly with 30% opacity
+    // If color is purple-ish, change to blue
+    if (booking.color.startsWith('#') && (
+        booking.color.toLowerCase().includes('a') || 
+        booking.color.toLowerCase().includes('b') || 
+        booking.color.toLowerCase().includes('c') || 
+        booking.color.toLowerCase().includes('d') || 
+        booking.color.toLowerCase().includes('e') || 
+        booking.color.toLowerCase().includes('f')
+      )) {
+      // Use a blue color instead
+      return { backgroundColor: 'rgba(30, 144, 255, 0.3)' }; // dodgerblue with 0.3 opacity
+    }
+    
+    // If it's a hex color, convert it to rgba with 30% opacity
     if (booking.color.startsWith('#')) {
       let hex = booking.color.slice(1);
       if (hex.length === 3) {
@@ -55,7 +68,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
       return { backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)` };
     }
     
-    // If not a hex color, use it directly with 0.3 opacity
+    // Default case: use the color with 0.3 opacity
     return { backgroundColor: `${booking.color}30` };
   }, [booking.color]);
 
