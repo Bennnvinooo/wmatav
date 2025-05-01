@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { RoomBooking } from '@/types/booking';
@@ -23,6 +23,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   bookings = []
 }) => {
   const [showSettings, setShowSettings] = useState(false);
+  const [isPublicMode, setIsPublicMode] = useState(false);
+  
+  // Check if we're in public mode
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    setIsPublicMode(hostname === 'wmatav.lovable.app');
+  }, []);
   
   const handleDownloadExcel = () => {
     if (!bookings || bookings.length === 0) {
@@ -58,20 +65,24 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   return <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>
         <div className="flex items-center gap-1">
-          <button 
-            onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none rounded-md px-2 py-1 hover:bg-accent/50"
-            aria-label="Toggle settings"
-          >
+          {!isPublicMode ? (
+            <button 
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none rounded-md px-2 py-1 hover:bg-accent/50"
+              aria-label="Toggle settings"
+            >
+              <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
+              <ChevronDown className={`h-5 w-5 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
+            </button>
+          ) : (
             <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
-            <ChevronDown className={`h-5 w-5 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
-          </button>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">
           Last updated: {lastUpdate}
         </p>
         
-        {showSettings && (
+        {showSettings && !isPublicMode && (
           <Card className="mt-3 w-full md:max-w-md">
             <CardHeader>
               <CardTitle className="flex items-center">
