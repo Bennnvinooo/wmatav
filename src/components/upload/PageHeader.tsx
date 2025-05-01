@@ -8,6 +8,12 @@ interface PageHeaderProps {
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({ onAdminAccess }) => {
+  const handleUploadClick = () => {
+    if (onAdminAccess) {
+      onAdminAccess();
+    }
+  };
+
   return (
     <div className="mb-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -18,16 +24,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({ onAdminAccess }) => {
           </p>
         </div>
         
-        {onAdminAccess && (
-          <Button 
-            onClick={onAdminAccess}
-            variant="default"
-            className="mt-4 md:mt-0"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Upload File
-          </Button>
-        )}
+        <Button 
+          onClick={handleUploadClick}
+          variant="default"
+          className="mt-4 md:mt-0"
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Upload File
+        </Button>
       </div>
     </div>
   );

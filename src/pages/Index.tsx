@@ -28,17 +28,19 @@ const Index: React.FC = () => {
   const { toast } = useToast();
   const [isPublicMode, setIsPublicMode] = useState(false);
   
-  // Always enable upload form by default - no public mode restrictions
+  // Force show upload form on initial load - for both preview and real app
   useEffect(() => {
-    // Force upload form to show by default
+    // Always show upload form by default
     setShowUploadForm(true);
     
-    // Always grant admin access
+    // Grant admin access
     try {
       localStorage.setItem('wmataAdminAccess', 'granted');
     } catch (error) {
       console.error("Error storing admin access:", error);
     }
+    
+    console.log("Index component mounted: Upload form set to visible");
   }, []);
   
   // State for toggling between calendar and list views
@@ -58,6 +60,10 @@ const Index: React.FC = () => {
     // Grant admin access when clicking admin login
     localStorage.setItem('wmataAdminAccess', 'granted');
     console.log("Admin access granted via admin login");
+    toast({
+      title: "Upload Access Granted",
+      description: "You can now upload booking data."
+    });
   };
 
   // Always visible admin button  
@@ -108,30 +114,16 @@ const Index: React.FC = () => {
             {renderAdminButton()}
           </div>
           
-          {isPublicMode && bookings.length === 0 ? (
-            <div className="mt-8 p-8 bg-muted rounded-lg text-center shadow-sm border border-border">
-              <h2 className="text-2xl font-semibold mb-4">No booking data available</h2>
-              <p className="mb-6 text-muted-foreground">Please check back later when the administrator has uploaded data.</p>
-              <Button 
-                onClick={handleAdminLoginClick} 
-                size="lg"
-                className="font-medium"
-              >
-                Admin Login
-              </Button>
-            </div>
-          ) : (
-            <BookingsDisplay 
-              bookings={bookings}
-              filteredBookings={filteredBookings}
-              filterOptions={filterOptions}
-              setFilterOptions={setFilterOptions}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              isLoading={isLoading}
-              clearFilters={clearFilters}
-            />
-          )}
+          <BookingsDisplay 
+            bookings={bookings}
+            filteredBookings={filteredBookings}
+            filterOptions={filterOptions}
+            setFilterOptions={setFilterOptions}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            isLoading={isLoading}
+            clearFilters={clearFilters}
+          />
         </>
       )}
     </div>

@@ -4,7 +4,6 @@ import { RoomBooking } from '@/types/booking';
 import FileUpload from '@/components/FileUpload';
 import { UploadSkeleton } from '@/components/SkeletonLoader';
 import PageHeader from './PageHeader';
-import AccessCard from './AccessCard';
 import { useToast } from '@/hooks/use-toast';
 
 interface UploadPageProps {
@@ -19,7 +18,6 @@ const UploadPage: React.FC<UploadPageProps> = ({
   setIsLoading 
 }) => {
   // Always grant admin access
-  const [isPasswordCorrect, setIsPasswordCorrect] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
@@ -27,67 +25,32 @@ const UploadPage: React.FC<UploadPageProps> = ({
   useEffect(() => {
     try {
       localStorage.setItem('wmataAdminAccess', 'granted');
-      setIsPasswordCorrect(true);
-      console.log("Admin access automatically granted");
+      console.log("UploadPage: Admin access automatically granted");
+      toast({
+        title: "Ready to Upload",
+        description: "You can now upload your Excel file."
+      });
     } catch (error) {
       console.error("Error setting admin access:", error);
-      // Still grant access even if localStorage fails
-      setIsPasswordCorrect(true);
     }
   }, []);
 
-  const handleRefresh = () => {
-    // Clear any cached data to force a fresh load
-    try {
-      localStorage.removeItem('lastViewedBookings');
-    } catch (error) {
-      console.error("Error clearing localStorage:", error);
-    }
-    window.location.reload();
-  };
-  
-  const handleAuthenticate = () => {
-    setIsPasswordCorrect(true);
-    // Store admin access in localStorage
-    try {
-      localStorage.setItem('wmataAdminAccess', 'granted');
-    } catch (error) {
-      console.error("Error storing admin access:", error);
-    }
-  };
-
-  // Direct access option for admins
-  const handleDirectAccess = () => {
-    setIsPasswordCorrect(true);
-    try {
-      localStorage.setItem('wmataAdminAccess', 'granted');
-    } catch (error) {
-      console.error("Error storing admin access:", error);
-    }
-    toast({
-      title: "Admin Access Granted",
-      description: "You can now upload booking data."
-    });
-  };
-
-  // Add emergency bypass for testing
-  const handleEmergencyAccess = () => {
-    console.log("Emergency admin access triggered");
-    setIsPasswordCorrect(true);
-    try {
-      localStorage.setItem('wmataAdminAccess', 'granted');
-    } catch (error) {
-      console.error("Error storing admin access:", error);
-    }
-    toast({
-      title: "Emergency Admin Access",
-      description: "You now have upload access",
-    });
-  };
-
-  // Admin access handler for PageHeader
+  // Admin access handler - directly open file dialog
   const handleAdminAccess = () => {
-    setIsSheetOpen(true);
+    console.log("Upload button clicked");
+    
+    // Find and click the hidden file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+      console.log("File input clicked");
+    } else {
+      console.error("File input not found");
+      toast({
+        title: "Error",
+        description: "Upload function not available. Please refresh the page."
+      });
+    }
   };
 
   return (
