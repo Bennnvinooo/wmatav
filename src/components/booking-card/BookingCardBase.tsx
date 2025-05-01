@@ -40,13 +40,13 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
         return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Orange for New Carrolton
       }
       
-      // Add specific colors for other stations
+      // Updated specific colors for other stations
       if (booking.roomName.includes("L'Enfant") || booking.roomName.includes("LEnfant")) {
-        return { backgroundColor: 'rgba(139, 92, 246, 0.3)' }; // Purple for L'Enfant
+        return { backgroundColor: 'rgba(16, 185, 129, 0.3)' }; // Green for L'Enfant
       }
       
       if (booking.roomName.includes("Eisenhower")) {
-        return { backgroundColor: 'rgba(16, 185, 129, 0.3)' }; // Green for Eisenhower
+        return { backgroundColor: 'rgba(0, 0, 205, 0.3)' }; // Royal Blue for Eisenhower
       }
     }
     
