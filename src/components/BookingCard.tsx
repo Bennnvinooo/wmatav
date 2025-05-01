@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import { RoomBooking } from '@/types/booking';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,39 +36,29 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     return colors[booking.status] || colors.pending;
   }, [booking.status]);
   
-  // Generate background color from booking color (using blue instead of purple)
+  // Generate background color based on the color column value
   const cardBackgroundStyle = useMemo(() => {
     if (!booking.color) return {};
     
-    // If color is purple-ish, change to blue
-    if (booking.color.startsWith('#') && (
-        booking.color.toLowerCase().includes('a') || 
-        booking.color.toLowerCase().includes('b') || 
-        booking.color.toLowerCase().includes('c') || 
-        booking.color.toLowerCase().includes('d') || 
-        booking.color.toLowerCase().includes('e') || 
-        booking.color.toLowerCase().includes('f')
-      )) {
-      // Use a blue color instead
-      return { backgroundColor: 'rgba(30, 144, 255, 0.3)' }; // dodgerblue with 0.3 opacity
+    const colorValue = booking.color.toLowerCase();
+    
+    // Map color names to specific RGB values
+    if (colorValue.includes('blue')) {
+      return { backgroundColor: 'rgba(30, 174, 219, 0.3)' }; // Bright Blue with 0.3 opacity
+    } else if (colorValue.includes('green')) {
+      return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Soft Green with 0.5 opacity
+    } else if (colorValue.includes('orange')) {
+      return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Bright Orange with 0.3 opacity
+    } else if (colorValue.includes('red')) {
+      return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Use orange for red
+    } else if (colorValue.includes('purple')) {
+      return { backgroundColor: 'rgba(30, 174, 219, 0.3)' }; // Use blue for purple
+    } else if (colorValue.includes('yellow')) {
+      return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Use green for yellow
     }
     
-    // If it's a hex color, convert it to rgba with 30% opacity
-    if (booking.color.startsWith('#')) {
-      let hex = booking.color.slice(1);
-      if (hex.length === 3) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-      }
-      
-      const r = parseInt(hex.slice(0, 2), 16);
-      const g = parseInt(hex.slice(2, 4), 16);
-      const b = parseInt(hex.slice(4, 6), 16);
-      
-      return { backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)` };
-    }
-    
-    // Default case: use the color with 0.3 opacity
-    return { backgroundColor: `${booking.color}30` };
+    // Default to blue if color doesn't match any of the specified colors
+    return { backgroundColor: 'rgba(30, 174, 219, 0.3)' };
   }, [booking.color]);
 
   // Extract contact information
