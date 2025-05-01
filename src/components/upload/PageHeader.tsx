@@ -9,6 +9,10 @@ interface PageHeaderProps {
 
 const PageHeader: React.FC<PageHeaderProps> = ({ onAdminAccess }) => {
   const handleUploadClick = () => {
+    // Ensure admin access is granted through localStorage
+    localStorage.setItem('wmataAdminAccess', 'granted');
+    console.log("Admin access granted via upload button");
+    
     if (onAdminAccess) {
       onAdminAccess();
     }

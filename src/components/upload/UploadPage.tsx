@@ -17,11 +17,10 @@ const UploadPage: React.FC<UploadPageProps> = ({
   isLoading, 
   setIsLoading 
 }) => {
-  // Always grant admin access
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
-  // Automatically grant admin access on load
+  // Automatically grant admin access on mount
   useEffect(() => {
     try {
       localStorage.setItem('wmataAdminAccess', 'granted');

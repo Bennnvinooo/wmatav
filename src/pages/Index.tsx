@@ -28,7 +28,7 @@ const Index: React.FC = () => {
   const { toast } = useToast();
   const [isPublicMode, setIsPublicMode] = useState(false);
   
-  // Force show upload form on initial load - for both preview and real app
+  // Force show upload form on initial load
   useEffect(() => {
     // Always show upload form by default
     setShowUploadForm(true);
@@ -36,11 +36,14 @@ const Index: React.FC = () => {
     // Grant admin access
     try {
       localStorage.setItem('wmataAdminAccess', 'granted');
+      console.log("Index: Admin access granted on load");
+      toast({
+        title: "Upload Ready",
+        description: "You can now upload your Excel file."
+      });
     } catch (error) {
       console.error("Error storing admin access:", error);
     }
-    
-    console.log("Index component mounted: Upload form set to visible");
   }, []);
   
   // State for toggling between calendar and list views
