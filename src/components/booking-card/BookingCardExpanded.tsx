@@ -20,14 +20,20 @@ const BookingCardExpanded: React.FC<BookingCardExpandedProps> = ({
   const contactInfo = useContactInfo(booking.purpose);
 
   const contactDisplay = () => {
-    if (contactInfo.email && contactInfo.phone) {
+    if (contactInfo.phone && contactInfo.email) {
       return (
-        <div className="text-sm text-muted-foreground mt-2">
+        <div className="text-sm text-muted-foreground mt-1">
           <span className="inline-flex items-center">
             <span className="font-medium">{contactInfo.email}</span>
             <span className="mx-2 text-muted-foreground">|</span>
             <span className="font-medium">{contactInfo.phone}</span>
           </span>
+        </div>
+      );
+    } else if (contactInfo.email || contactInfo.phone) {
+      return (
+        <div className="text-sm text-muted-foreground mt-1">
+          <span className="font-medium">{contactInfo.email || contactInfo.phone}</span>
         </div>
       );
     }

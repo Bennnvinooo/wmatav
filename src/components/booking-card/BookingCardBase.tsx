@@ -75,8 +75,24 @@ export const useContactInfo = (purpose: string) => {
   return useMemo(() => {
     // Look for email and phone in purpose
     const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
-    const phoneRegex = /(\+\d{1,2}\s)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
     
+    // Updated phone regex to capture formats like "202 - 555-1234" with various separators
+    const phoneRegex = /(\+\d{1,2}\s)?(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\d{3}[-.\s]+\d{3}[-.\s]+\d{4})/g;
+    
+    // Check for contact format "Contact: Name | Phone | Email"
+    const contactBlockRegex = /Contact:([^|]+)\|([^|]+)\|([^|]+)/i;
+    const contactMatch = purpose.match(contactBlockRegex);
+    
+    if (contactMatch) {
+      // Parse contact information from the special format
+      const name = contactMatch[1].trim();
+      const phone = contactMatch[2].trim();
+      const email = contactMatch[3].trim();
+      
+      return { email, phone, name };
+    }
+    
+    // Fallback to regex extraction if contact block format isn't found
     const email = purpose.match(emailRegex)?.[0] || '';
     const phone = purpose.match(phoneRegex)?.[0] || '';
     
