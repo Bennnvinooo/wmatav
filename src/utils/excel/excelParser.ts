@@ -146,6 +146,11 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           bookings.push(booking);
         }
         
+        console.log("Parsed bookings:", bookings);
+        if (bookings.length > 0) {
+          console.log("Sample booking:", bookings[0]);
+        }
+        
         resolve(bookings);
       } catch (error) {
         console.error('Error parsing Excel file:', error);

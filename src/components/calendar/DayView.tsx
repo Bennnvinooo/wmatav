@@ -25,25 +25,44 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, dayBookings }) => {
   dayBookings.forEach(booking => {
     try {
       // Parse the start time (assuming format like "09:00" or "14:30")
-      const timeStr = booking.startTime;
-      const [hours, minutes] = timeStr.split(':').map(Number);
+      const timeStr = booking.startTime || '';
+      let hours = 9; // Default to 9am if parsing fails
       
-      if (!isNaN(hours) && hours >= 0 && hours < 24) {
-        // Place the booking in the correct hour slot
-        if (bookingsByHour[hours]) {
-          bookingsByHour[hours].push(booking);
-        } else if (hours < 7) {
-          // Early morning bookings go into 7am slot
-          bookingsByHour[7].push(booking);
-        } else if (hours > 21) {
-          // Late evening bookings go into 9pm slot
-          bookingsByHour[21].push(booking);
+      if (timeStr) {
+        // Try parsing with different formats
+        const timeParts = timeStr.split(':');
+        if (timeParts.length >= 1) {
+          const parsedHours = parseInt(timeParts[0], 10);
+          if (!isNaN(parsedHours) && parsedHours >= 0 && parsedHours < 24) {
+            hours = parsedHours;
+          }
         }
       }
+      
+      // Place the booking in the correct hour slot
+      if (bookingsByHour[hours]) {
+        bookingsByHour[hours].push(booking);
+      } else if (hours < 7) {
+        // Early morning bookings go into 7am slot
+        bookingsByHour[7].push(booking);
+      } else if (hours > 21) {
+        // Late evening bookings go into 9pm slot
+        bookingsByHour[21].push(booking);
+      }
+      
     } catch (error) {
       console.error(`Error parsing booking time: ${booking.startTime}`, error);
+      
+      // Even if parsing fails, put the booking somewhere visible (9am slot)
+      if (bookingsByHour[9]) {
+        bookingsByHour[9].push(booking);
+      }
     }
   });
+  
+  console.log('Current date:', currentDate);
+  console.log('Day bookings:', dayBookings);
+  console.log('Bookings by hour:', bookingsByHour);
   
   return (
     <div className="space-y-4">
