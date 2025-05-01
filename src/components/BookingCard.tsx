@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from 'react';
 import { RoomBooking } from '@/types/booking';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,8 +37,13 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     return colors[booking.status] || colors.pending;
   }, [booking.status]);
   
-  // Generate background color based on the color column value
+  // Generate background color based on the color column value or room name
   const cardBackgroundStyle = useMemo(() => {
+    // First check if the room name contains "New Carrolton" and make it orange
+    if (booking.roomName && booking.roomName.includes("New Carrolton")) {
+      return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Bright Orange with 0.3 opacity
+    }
+    
     if (!booking.color) return {};
     
     const colorValue = booking.color.toLowerCase();
@@ -59,7 +65,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     
     // Default to blue if color doesn't match any of the specified colors
     return { backgroundColor: 'rgba(30, 174, 219, 0.3)' };
-  }, [booking.color]);
+  }, [booking.color, booking.roomName]);
 
   // Extract contact information
   const contactInfo = useMemo(() => {
