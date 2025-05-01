@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 import { RoomBooking, ColumnMapping } from '@/types/booking';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,9 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 // Common column variations for each field
 const COLUMN_VARIATIONS: ColumnMapping = {
   roomName: ['room', 'room name', 'location', 'venue', 'meeting room', 'space', 'station'],
-  date: ['date', 'booking date', 'meeting date', 'day', 'when'],
-  startTime: ['start time', 'start', 'from', 'begins at', 'beginning', 'time start', 'start at', 'from time', 'time'],
-  endTime: ['end time', 'end', 'to', 'until', 'ending at', 'time end', 'finish', 'finish time'],
+  date: ['date', 'booking date', 'meeting date', 'day', 'when', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+  startTime: ['start time', 'start', 'from', 'begins at', 'beginning', 'time start', 'start at', 'from time', 'time', 'meeting hours'],
+  endTime: ['end time', 'end', 'to', 'until', 'ending at', 'time end', 'finish', 'finish time', 'meeting hours'],
   bookedBy: ['booked by', 'organizer', 'booking person', 'booker', 'reserved by', 'host', 'department', 'team', 'organization', 'organization/group'],
   purpose: ['purpose', 'reason', 'description', 'meeting title', 'event name', 'subject', 'title', 'about', 'set-up guide'],
   status: ['status', 'booking status', 'state', 'condition']
@@ -68,6 +67,24 @@ const normalizeDate = (dateValue: string | number): string => {
   return dateStr;
 };
 
+// Extract time from strings like "Meeting Hours: 7:00AM – 5:00PM"
+const extractTimeRange = (timeStr: string): { startTime: string, endTime: string } => {
+  if (!timeStr) return { startTime: '', endTime: '' };
+  
+  // Handle format like "Meeting Hours: 7:00AM – 5:00PM"
+  const meetingHoursMatch = timeStr.match(/hours?:?\s*(\d{1,2}:\d{2}\s*(?:am|pm)?)\s*[-–]\s*(\d{1,2}:\d{2}\s*(?:am|pm)?)/i);
+  if (meetingHoursMatch) {
+    const startTimeStr = meetingHoursMatch[1];
+    const endTimeStr = meetingHoursMatch[2];
+    return {
+      startTime: normalizeTime(startTimeStr),
+      endTime: normalizeTime(endTimeStr)
+    };
+  }
+  
+  return { startTime: '', endTime: '' };
+};
+
 // Normalize time format to HH:MM (24-hour)
 const normalizeTime = (timeValue: string | number): string => {
   if (!timeValue) return '';
@@ -92,7 +109,7 @@ const normalizeTime = (timeValue: string | number): string => {
   }
   
   // Try 12-hour format: HH:MM AM/PM or H:MM AM/PM
-  const twelveHour = /^(\d{1,2}):(\d{2})\s*(am|pm)$/;
+  const twelveHour = /^(\d{1,2}):(\d{2})\s*(am|pm)$/i;
   match = timeStr.match(twelveHour);
   if (match) {
     let [_, hours, minutes, ampm] = match;
@@ -102,9 +119,9 @@ const normalizeTime = (timeValue: string | number): string => {
     return `${hour.toString().padStart(2, '0')}:${minutes}`;
   }
 
-  // Parse time ranges like "7:00AM - 5:00PM"
-  const timeRange = /^(\d{1,2}):(\d{2})\s*(am|pm)?(?:\s*-\s*\d{1,2}:\d{2}\s*(am|pm)?)$/i;
-  match = timeStr.match(timeRange);
+  // Parse time ranges like "7:00AM" from "7:00AM - 5:00PM"
+  const singleTime = /^(\d{1,2}):(\d{2})\s*(am|pm)?/i;
+  match = timeStr.match(singleTime);
   if (match) {
     let [_, hours, minutes, ampm] = match;
     let hour = parseInt(hours, 10);
@@ -144,7 +161,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           throw new Error('Failed to read file');
         }
         
-        const workbook = XLSX.read(data, { type: 'binary' });
+        const workbook = XLSX.read(data, { type: 'array' });
         
         // Find the most relevant sheet (prefer sheets with "booking" in the name)
         let sheetName = workbook.SheetNames[0]; // Default to first sheet
@@ -187,9 +204,25 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           status: findMatchingColumn(headers, COLUMN_VARIATIONS.status),
         };
         
+        console.log("Found column indexes:", columnIndexes);
+        console.log("Headers:", headers);
+        
+        // Special handling for meeting hours column that contains both start and end times
+        const meetingHoursIndex = headers.findIndex(h => 
+          h.includes('meeting hours') || h.includes('time') || h.includes('hours')
+        );
+        
         // Check if minimum required fields are found
-        const requiredFields = ['roomName', 'date', 'startTime', 'endTime'];
-        const missingFields = requiredFields.filter(field => columnIndexes[field as keyof typeof columnIndexes] === -1);
+        const missingFields = [];
+        
+        // Required fields check - handle the case where meeting hours contains both start and end times
+        if (columnIndexes.roomName === -1) missingFields.push('roomName');
+        if (columnIndexes.date === -1) missingFields.push('date');
+        
+        if (columnIndexes.startTime === -1 && columnIndexes.endTime === -1 && meetingHoursIndex === -1) {
+          missingFields.push('startTime');
+          missingFields.push('endTime');
+        }
         
         if (missingFields.length > 0) {
           throw new Error(`Missing required columns: ${missingFields.join(', ')}`);
@@ -205,11 +238,28 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
           
           const roomName = columnIndexes.roomName !== -1 ? String(row[columnIndexes.roomName] || '') : 'Unknown';
           const date = columnIndexes.date !== -1 ? normalizeDate(row[columnIndexes.date]) : '';
-          const startTime = columnIndexes.startTime !== -1 ? normalizeTime(row[columnIndexes.startTime]) : '';
-          const endTime = columnIndexes.endTime !== -1 ? normalizeTime(row[columnIndexes.endTime]) : '';
+          
+          let startTime = '';
+          let endTime = '';
+          
+          // Handle cases where time information is in a single "Meeting Hours" column
+          if (meetingHoursIndex !== -1 && meetingHoursIndex >= 0) {
+            const timeRange = extractTimeRange(String(row[meetingHoursIndex] || ''));
+            startTime = timeRange.startTime;
+            endTime = timeRange.endTime;
+          } else {
+            startTime = columnIndexes.startTime !== -1 ? normalizeTime(row[columnIndexes.startTime]) : '';
+            endTime = columnIndexes.endTime !== -1 ? normalizeTime(row[columnIndexes.endTime]) : '';
+          }
           
           // Skip rows with missing essential data
-          if (!roomName || !date || !startTime || !endTime) continue;
+          if (!roomName || !date) continue;
+          
+          // If we have a time range but couldn't parse it, skip this row
+          if ((meetingHoursIndex !== -1 && (!startTime || !endTime)) && 
+             (columnIndexes.startTime === -1 || columnIndexes.endTime === -1)) {
+            continue;
+          }
           
           const booking: RoomBooking = {
             id: uuidv4(),
@@ -244,7 +294,7 @@ export const parseExcelFile = async (file: File): Promise<RoomBooking[]> => {
 
 export const generateSampleFile = (): Blob => {
   const sampleData = [
-    ['Date', 'Organization/Group', 'Station', 'Location', 'Time', 'Set-up Guide', 'Coordinator Contact Information', 'Color'],
+    ['Date', 'Organization/Group', 'Station', 'Location', 'Meeting Hours', 'Set-up Guide', 'Coordinator Contact Information', 'Color'],
     ['Monday May 14th', 'SAFETY CERTIFICATION TRAINING', 'New Carrolton', 'NC - Multipurpose Rooms: 101-17, 101-18 & 101-19', 'Meeting Hours: 7:00AM – 5:00PM', 'Expected Guests: 40\nSet-up Style: CLASSROOM\nSet-up Time: 6:00AM', 'Alvin Addison | 202 – 381-8266\nAAddison@wmata.com', ''],
     ['Tuesday May 15th', 'METRO TRANSIT POLICE', 'College Park', 'CP - Room 112A', 'Meeting Hours: 9:00AM – 12:00PM', 'Expected Guests: 15\nSet-up Style: CLASSROOM\nSet-up Time: 8:00AM', 'Sarah Johnson | 202-555-1234\nSJohnson@wmata.com', ''],
     ['Wednesday May 16th', 'IT DEPARTMENT', 'Greenbelt', 'GB - Conference Room 203', 'Meeting Hours: 1:00PM – 3:00PM', 'Expected Guests: 10\nSet-up Style: BOARDROOM\nSet-up Time: 12:00PM', 'Michael Chen | 202-555-7890\nMChen@wmata.com', ''],
