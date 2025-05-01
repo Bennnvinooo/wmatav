@@ -4,7 +4,7 @@ import { RoomBooking, FilterOptions, ViewMode } from '@/types/booking';
 import FileUpload from '@/components/FileUpload';
 import CalendarView from '@/components/CalendarView';
 import ListView from '@/components/ListView';
-import FilterBar from '@/components/FilterBar';
+import FilterBar from '@/components/filters/FilterBar';
 import MobileNav from '@/components/MobileNav';
 import { BookingCardSkeleton, CalendarSkeleton, FilterSkeleton, UploadSkeleton } from '@/components/SkeletonLoader';
 import { useToast } from '@/hooks/use-toast';
