@@ -43,6 +43,7 @@ const Index: React.FC = () => {
           <PageHeader 
             lastUpdate={lastUpdate} 
             onUploadClick={handleUploadClick}
+            bookings={bookings}
           />
           
           <BookingsDisplay 
