@@ -1,11 +1,10 @@
 
 import React from 'react';
 import { FilterOptions, RoomBooking, ViewMode } from '@/types/booking';
-import CalendarView from '@/components/CalendarView';
-import ListView from '@/components/ListView';
 import FilterBar from '@/components/filters/FilterBar';
-import { Button } from '@/components/ui/button';
-import { FilterSkeleton, BookingCardSkeleton } from '@/components/SkeletonLoader';
+import BookingsLoadingState from './BookingsLoadingState';
+import EmptyBookingsState from './EmptyBookingsState';
+import ViewSelector from './ViewSelector';
 
 interface BookingsDisplayProps {
   bookings: RoomBooking[];
@@ -31,25 +30,11 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
   console.log("BookingsDisplay rendered with:", filteredBookings.length, "filtered bookings from", bookings.length, "total bookings");
   
   if (isLoading) {
-    return (
-      <>
-        <FilterSkeleton />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <BookingCardSkeleton key={i} />
-          ))}
-        </div>
-      </>
-    );
+    return <BookingsLoadingState />;
   }
 
   if (bookings.length === 0) {
-    return (
-      <div className="bg-red-500 text-white p-6 rounded-lg shadow-lg mt-8">
-        <h2 className="text-xl font-bold mb-2">No booking data available</h2>
-        <p className="mb-4">Please check back later when the administrator has uploaded data.</p>
-      </div>
-    );
+    return <EmptyBookingsState hasBookings={false} clearFilters={clearFilters} />;
   }
 
   return (
@@ -62,23 +47,14 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
         setViewMode={setViewMode}
       />
       
-      {viewMode === 'calendar' ? (
-        <CalendarView bookings={filteredBookings} filterOptions={filterOptions} />
-      ) : (
-        <ListView bookings={filteredBookings} filterOptions={filterOptions} />
-      )}
+      <ViewSelector 
+        viewMode={viewMode}
+        filteredBookings={filteredBookings}
+        filterOptions={filterOptions}
+      />
       
       {filteredBookings.length === 0 && bookings.length > 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">No bookings match the current filters</p>
-          <Button 
-            variant="outline" 
-            onClick={clearFilters}
-            className="mt-4"
-          >
-            Clear All Filters
-          </Button>
-        </div>
+        <EmptyBookingsState hasBookings={true} clearFilters={clearFilters} />
       )}
     </>
   );
