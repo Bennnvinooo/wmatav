@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
 import { RoomBooking, FilterOptions } from '@/types/booking';
-import { getSampleData } from '@/utils/sample-data';
 
 // Hook to manage the bookings state
 export function useBookingsStore() {
-  const [bookings, setBookings] = useState<RoomBooking[]>(getSampleData());
+  // Initialize with empty array, not with sample data
+  const [bookings, setBookings] = useState<RoomBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
   

@@ -36,11 +36,19 @@ export function useBookings() {
     clearFilters();
   };
   
-  // Load saved bookings from localStorage or sessionStorage on initial load
+  // Load saved bookings from localStorage on initial load
   useEffect(() => {
     console.log("useBookings: Initial load");
     
-    // Default to showing bookings by default
+    // Try to load bookings from storage first
+    const savedBookings = loadBookingsFromStorage();
+    console.log("Loaded saved bookings:", savedBookings?.length || 0);
+    
+    if (savedBookings && savedBookings.length > 0) {
+      setBookings(savedBookings);
+    }
+    
+    // Default to showing bookings view
     setShowUploadForm(false);
   }, []);
 

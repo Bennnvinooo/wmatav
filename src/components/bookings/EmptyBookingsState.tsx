@@ -13,9 +13,9 @@ const EmptyBookingsState: React.FC<EmptyBookingsStateProps> = ({
 }) => {
   if (!hasBookings) {
     return (
-      <div className="bg-red-500 text-white p-6 rounded-lg shadow-lg mt-8">
+      <div className="bg-blue-100 text-blue-800 p-6 rounded-lg shadow-md mt-8">
         <h2 className="text-xl font-bold mb-2">No booking data available</h2>
-        <p className="mb-4">Please check back later when the administrator has uploaded data.</p>
+        <p className="mb-4">Please check back later or upload new data.</p>
       </div>
     );
   }

@@ -7,7 +7,6 @@ export function useBookingsPersistence() {
   
   const saveBookingsToStorage = (data: RoomBooking[]) => {
     try {
-      // Store for both admin use and public visitors
       localStorage.setItem('roomBookings', JSON.stringify(data));
       localStorage.setItem('lastUpdate', new Date().toISOString());
       
@@ -28,7 +27,11 @@ export function useBookingsPersistence() {
   const loadBookingsFromStorage = (): RoomBooking[] | null => {
     try {
       const storedData = localStorage.getItem('roomBookings');
-      return storedData ? JSON.parse(storedData) : null;
+      if (storedData) {
+        console.log("Found stored bookings data");
+        return JSON.parse(storedData);
+      }
+      return null;
     } catch (error) {
       console.error("Error loading bookings:", error);
       return null;

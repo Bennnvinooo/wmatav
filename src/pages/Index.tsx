@@ -6,6 +6,8 @@ import BookingsDisplay from '@/components/bookings/BookingsDisplay';
 import PageHeader from '@/components/layout/PageHeader';
 import { useBookings } from '@/hooks/use-bookings';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { getSampleData } from '@/utils/sample-data';
 
 const Index: React.FC = () => {
   // Get bookings and related state from our custom hook
@@ -27,8 +29,6 @@ const Index: React.FC = () => {
   
   useEffect(() => {
     console.log("Index page loaded, bookings:", bookings.length);
-    // Ensure we show bookings view by default
-    setShowUploadForm(false);
   }, [bookings.length]);
   
   // State for toggling between calendar and list views
@@ -42,6 +42,15 @@ const Index: React.FC = () => {
   // Handler to view bookings
   const handleViewBookings = () => {
     setShowUploadForm(false);
+  };
+  
+  // Handler to load sample data
+  const handleLoadSampleData = () => {
+    handleDataLoaded(getSampleData());
+    toast({
+      title: "Sample data loaded",
+      description: "Sample booking data has been loaded successfully",
+    });
   };
 
   return (
@@ -65,7 +74,7 @@ const Index: React.FC = () => {
             setIsLoading={setIsLoading}
           />
         </>
-      ) : (
+      ) : bookings.length > 0 ? (
         <>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
             <PageHeader 
@@ -86,6 +95,29 @@ const Index: React.FC = () => {
             clearFilters={clearFilters}
           />
         </>
+      ) : (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <h1 className="text-3xl font-bold mb-2">WMATA AV Booking</h1>
+          <p className="text-gray-600 mb-8">AV Room Booking Information</p>
+          
+          <p className="text-lg mb-6">This is a public view of the WMATA room booking system. The data has not been uploaded yet.</p>
+          
+          <div className="space-x-4">
+            <Button 
+              onClick={handleLoadSampleData}
+              variant="default"
+            >
+              Load Sample Data
+            </Button>
+            
+            <Button 
+              onClick={handleUploadClick}
+              variant="outline"
+            >
+              Upload Data
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
