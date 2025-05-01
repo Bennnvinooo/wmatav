@@ -14,8 +14,6 @@ document.addEventListener('touchstart', function(e) {
 // PWA display notification if not installed and is mobile
 let deferredPrompt: any;
 window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent Chrome 67 and earlier from automatically showing the prompt
-  e.preventDefault();
   // Store the event so it can be triggered later
   deferredPrompt = e;
   
@@ -23,9 +21,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   if (isMobile) {
     console.log('PWA installation available');
-    // You could show a custom install UI here
+    // Show prompt after 3 seconds for mobile users
     setTimeout(() => {
       if (deferredPrompt) {
+        // This is the important part - actually show the prompt
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult: {outcome: string}) => {
           if (choiceResult.outcome === 'accepted') {
@@ -36,7 +35,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
           deferredPrompt = null;
         });
       }
-    }, 3000); // Show prompt after 3 seconds
+    }, 3000);
   }
 });
 
