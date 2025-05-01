@@ -60,7 +60,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         <div className="flex items-center gap-1">
           <button 
             onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-1 group hover:text-primary transition-colors focus:outline-none"
+            className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none rounded-md px-2 py-1 hover:bg-accent/50"
+            aria-label="Toggle settings"
           >
             <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
             <ChevronDown className={`h-5 w-5 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
