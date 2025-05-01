@@ -1,6 +1,44 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { RoomBooking, FilterOptions } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
+
+// Sample static booking data for public view
+const staticBookings: RoomBooking[] = [
+  {
+    id: "1",
+    roomName: "Conference Room A",
+    date: "2025-04-01",
+    startTime: "09:00",
+    endTime: "10:30",
+    bookedBy: "John Smith",
+    purpose: "Team Standup",
+    status: "confirmed",
+    equipment: ["Projector", "Whiteboard"]
+  },
+  {
+    id: "2",
+    roomName: "Training Room B",
+    date: "2025-04-01",
+    startTime: "13:00",
+    endTime: "15:00",
+    bookedBy: "Sarah Johnson",
+    purpose: "New Hire Orientation",
+    status: "confirmed",
+    equipment: ["Projector", "Audio System"]
+  },
+  {
+    id: "3",
+    roomName: "Meeting Room C",
+    date: "2025-04-02",
+    startTime: "11:00",
+    endTime: "12:00",
+    bookedBy: "Robert Davis",
+    purpose: "Client Meeting",
+    status: "confirmed",
+    equipment: ["Video Conference"]
+  }
+];
 
 export function useBookings() {
   const [bookings, setBookings] = useState<RoomBooking[]>([]);
@@ -111,6 +149,7 @@ export function useBookings() {
   };
   
   // Load saved bookings from localStorage on initial load
+  // If none exist, use static bookings for public view
   useEffect(() => {
     setIsLoading(true);
     const savedBookings = localStorage.getItem('roomBookings');
@@ -157,17 +196,26 @@ export function useBookings() {
             description: `${parsedBookings.length} bookings loaded from your last session`,
           });
         } else {
-          // If no valid bookings were found, show the upload form
-          setShowUploadForm(true);
+          // Use static bookings instead
+          console.log("Using static bookings for public view");
+          setBookings(staticBookings);
+          // Don't show upload form for public view
+          setShowUploadForm(false);
         }
       } catch (error) {
         console.error('Failed to load saved bookings:', error);
-        // If there's an error loading bookings, show the upload form
-        setShowUploadForm(true);
+        // Use static bookings instead
+        console.log("Using static bookings for public view after error");
+        setBookings(staticBookings);
+        // Don't show upload form for public view
+        setShowUploadForm(false);
       }
     } else {
-      // If no saved bookings exist at all, show the upload form
-      setShowUploadForm(true);
+      // Use static bookings for public view
+      console.log("No saved bookings, using static bookings for public view");
+      setBookings(staticBookings);
+      // Don't show upload form for public view
+      setShowUploadForm(false);
     }
     setIsLoading(false);
   }, []);
