@@ -37,16 +37,16 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
     // First check if the room name contains specific station names
     if (booking.roomName) {
       if (booking.roomName.includes("New Carrolton")) {
-        return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Orange for New Carrolton
+        return { backgroundColor: 'rgba(199, 92, 17, 0.4)' }; // Darker Orange for New Carrolton
       }
       
-      // Updated colors according to user's specification
+      // Updated colors according to user's specification with darker shades
       if (booking.roomName.includes("L'Enfant") || booking.roomName.includes("LEnfant") || booking.roomName.includes("Le Enfant")) {
-        return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Green for L'Enfant
+        return { backgroundColor: 'rgba(192, 202, 180, 0.5)' }; // Darker Green for L'Enfant
       }
       
       if (booking.roomName.includes("Eisenhower")) {
-        return { backgroundColor: 'rgba(173, 216, 230, 0.5)' }; // Light blue for Eisenhower
+        return { backgroundColor: 'rgba(123, 166, 180, 0.5)' }; // Darker Light blue for Eisenhower
       }
     }
     
@@ -54,23 +54,23 @@ export const useCardBackgroundStyle = (booking: RoomBooking) => {
     
     const colorValue = booking.color.toLowerCase();
     
-    // Map color names to specific RGB values
+    // Map color names to specific RGB values - darker shades
     if (colorValue.includes('blue')) {
-      return { backgroundColor: 'rgba(173, 216, 230, 0.5)' }; // Light Blue with 0.5 opacity
+      return { backgroundColor: 'rgba(123, 166, 180, 0.5)' }; // Darker Light Blue
     } else if (colorValue.includes('green')) {
-      return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Soft Green with 0.5 opacity
+      return { backgroundColor: 'rgba(192, 202, 180, 0.5)' }; // Darker Soft Green
     } else if (colorValue.includes('orange')) {
-      return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Bright Orange with 0.3 opacity
+      return { backgroundColor: 'rgba(199, 92, 17, 0.4)' }; // Darker Bright Orange
     } else if (colorValue.includes('red')) {
-      return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Use orange for red
+      return { backgroundColor: 'rgba(199, 92, 17, 0.4)' }; // Darker orange for red
     } else if (colorValue.includes('purple')) {
-      return { backgroundColor: 'rgba(221, 160, 221, 0.5)' }; // Light purple with 0.5 opacity
+      return { backgroundColor: 'rgba(171, 110, 171, 0.5)' }; // Darker Light purple
     } else if (colorValue.includes('yellow')) {
-      return { backgroundColor: 'rgba(242, 252, 226, 0.5)' }; // Use green for yellow
+      return { backgroundColor: 'rgba(192, 202, 180, 0.5)' }; // Darker green for yellow
     }
     
-    // Default to blue if color doesn't match any of the specified colors
-    return { backgroundColor: 'rgba(173, 216, 230, 0.5)' };
+    // Default to darker blue if color doesn't match any of the specified colors
+    return { backgroundColor: 'rgba(123, 166, 180, 0.5)' };
   }, [booking.color, booking.roomName]);
 };
 

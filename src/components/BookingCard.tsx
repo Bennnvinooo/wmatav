@@ -9,7 +9,7 @@ interface BookingCardProps {
   compact?: boolean;
 }
 
-const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) => {
+const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = true }) => {
   const [expanded, setExpanded] = useState(false);
 
   // Toggle expanded view
@@ -17,8 +17,8 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     setExpanded(!expanded);
   };
 
-  // If not expanded and compact, show compact view
-  if (!expanded && compact) {
+  // Show compact view by default (changed default to true, and only show expanded when explicitly toggled)
+  if (!expanded) {
     return (
       <BookingCardCompact 
         booking={booking} 
@@ -27,7 +27,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, compact = false }) =
     );
   }
 
-  // Expanded or non-compact view
+  // Expanded view
   return (
     <BookingCardExpanded 
       booking={booking} 

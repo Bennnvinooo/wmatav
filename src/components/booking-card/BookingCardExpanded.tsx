@@ -3,7 +3,7 @@ import { RoomBooking } from '@/types/booking';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail } from 'lucide-react';
+import { Phone, Mail, Minimize } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import BookingCardBase, { useStatusColors, useContactInfo } from './BookingCardBase';
 
@@ -65,46 +65,44 @@ const BookingCardExpanded: React.FC<BookingCardExpandedProps> = ({
           </div>
         </CardContent>
         
-        {(contactInfo.phone || contactInfo.email) && (
-          <CardFooter className="p-4 pt-0 flex gap-2 justify-end">
+        <CardFooter className="p-4 pt-0 flex gap-2 justify-end">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={onClose}
+            className="mr-auto"
+          >
+            <Minimize className="w-4 h-4 mr-2" /> Minimize
+          </Button>
+          
+          {contactInfo.phone && (
             <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onClose}
-              className="mr-auto"
+              variant="ghost" 
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = `tel:${contactInfo.phone.replace(/\D/g, '')}`;
+              }}
             >
-              Close
+              <Phone className="w-4 h-4 mr-2" /> Call
             </Button>
-            
-            {contactInfo.phone && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `tel:${contactInfo.phone.replace(/\D/g, '')}`;
-                }}
-              >
-                <Phone className="w-4 h-4 mr-2" /> Call
-              </Button>
-            )}
-            
-            {contactInfo.email && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `mailto:${contactInfo.email}`;
-                }}
-              >
-                <Mail className="w-4 h-4 mr-2" /> Email
-              </Button>
-            )}
-          </CardFooter>
-        )}
+          )}
+          
+          {contactInfo.email && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = `mailto:${contactInfo.email}`;
+              }}
+            >
+              <Mail className="w-4 h-4 mr-2" /> Email
+            </Button>
+          )}
+        </CardFooter>
       </Card>
     </BookingCardBase>
   );
