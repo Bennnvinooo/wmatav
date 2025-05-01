@@ -34,9 +34,20 @@ export const useStatusColors = (status: RoomBooking['status']) => {
 
 export const useCardBackgroundStyle = (booking: RoomBooking) => {
   return useMemo(() => {
-    // First check if the room name contains "New Carrolton" and make it orange
-    if (booking.roomName && booking.roomName.includes("New Carrolton")) {
-      return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Bright Orange with 0.3 opacity
+    // First check if the room name contains specific station names
+    if (booking.roomName) {
+      if (booking.roomName.includes("New Carrolton")) {
+        return { backgroundColor: 'rgba(249, 115, 22, 0.3)' }; // Orange for New Carrolton
+      }
+      
+      // Add specific colors for other stations
+      if (booking.roomName.includes("L'Enfant") || booking.roomName.includes("LEnfant")) {
+        return { backgroundColor: 'rgba(139, 92, 246, 0.3)' }; // Purple for L'Enfant
+      }
+      
+      if (booking.roomName.includes("Eisenhower")) {
+        return { backgroundColor: 'rgba(16, 185, 129, 0.3)' }; // Green for Eisenhower
+      }
     }
     
     if (!booking.color) return {};
