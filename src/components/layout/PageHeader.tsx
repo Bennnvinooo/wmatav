@@ -1,8 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { RoomBooking } from '@/types/booking';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Settings } from 'lucide-react';
 
 interface PageHeaderProps {
   lastUpdate: string;
@@ -15,6 +22,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   onUploadClick,
   bookings = []
 }) => {
+  const [showSettings, setShowSettings] = useState(false);
+  
   const handleDownloadExcel = () => {
     if (!bookings || bookings.length === 0) {
       console.log("No bookings data to download");
@@ -48,10 +57,44 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   
   return <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking </h1>
+        <Button 
+          variant="ghost" 
+          className="p-0 h-auto hover:bg-transparent" 
+          onClick={() => setShowSettings(!showSettings)}
+        >
+          <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
+        </Button>
         <p className="text-sm text-muted-foreground">
           Last updated: {lastUpdate}
         </p>
+        
+        {showSettings && (
+          <Card className="mt-3 w-full md:max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Settings className="w-5 h-5 mr-2" />
+                Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Access settings and configuration options for the WMATA AV Booking system.
+                </p>
+                <div className="pt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowSettings(false)}
+                    className="w-full"
+                  >
+                    Close Settings
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <div className="flex flex-col md:flex-row gap-2">
