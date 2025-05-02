@@ -93,6 +93,7 @@ const Index: React.FC = () => {
             setViewMode={setViewMode}
             isLoading={isLoading}
             clearFilters={clearFilters}
+            onUploadClick={handleUploadClick}
           />
         </>
       ) : (

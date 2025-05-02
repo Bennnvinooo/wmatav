@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RoomBooking } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
 import { useBookingsStore } from './use-bookings-store';
@@ -19,11 +19,23 @@ export function useBookings() {
     clearFilters
   } = useBookingsStore();
 
+  // State to track if data has been initialized
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const { saveBookingsToStorage, loadBookingsFromStorage } = useBookingsPersistence();
   const { filteredBookings } = useBookingsFiltering(bookings, filterOptions);
   const { toast } = useToast();
   
   const lastUpdate = useMemo(() => {
+    const storedDate = localStorage.getItem('lastUpdate');
+    if (storedDate) {
+      try {
+        return new Date(storedDate).toLocaleString();
+      } catch (e) {
+        // If parsing fails, return current date
+        return new Date().toLocaleString();
+      }
+    }
     return new Date().toLocaleString();
   }, [bookings]);
   
@@ -34,22 +46,41 @@ export function useBookings() {
     
     saveBookingsToStorage(data);
     clearFilters();
+    
+    toast({
+      title: "Success",
+      description: `Loaded ${data.length} bookings successfully`,
+    });
   };
   
   // Load saved bookings from localStorage on initial load
   useEffect(() => {
-    console.log("useBookings: Initial load");
+    if (isInitialized) return; // Skip if already initialized
     
-    // Try to load bookings from storage first
-    const savedBookings = loadBookingsFromStorage();
-    console.log("Loaded saved bookings:", savedBookings?.length || 0);
+    console.log("useBookings: Initial load attempt");
+    setIsLoading(true);
     
-    if (savedBookings && savedBookings.length > 0) {
-      setBookings(savedBookings);
+    try {
+      // Try to load bookings from storage first
+      const savedBookings = loadBookingsFromStorage();
+      console.log("Loaded saved bookings:", savedBookings?.length || 0);
+      
+      if (savedBookings && savedBookings.length > 0) {
+        setBookings(savedBookings);
+        setShowUploadForm(false); // Make sure we show the bookings view
+        console.log("Successfully loaded saved bookings");
+      } else {
+        // No saved bookings found
+        setShowUploadForm(true); // Show upload form if no data
+        console.log("No saved bookings found, showing upload form");
+      }
+    } catch (e) {
+      console.error("Error during initialization:", e);
+      setShowUploadForm(true);
+    } finally {
+      setIsLoading(false);
+      setIsInitialized(true);
     }
-    
-    // Default to showing bookings view
-    setShowUploadForm(false);
   }, []);
 
   return {

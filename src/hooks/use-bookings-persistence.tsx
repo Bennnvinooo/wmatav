@@ -1,19 +1,37 @@
 
 import { RoomBooking } from '@/types/booking';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 export function useBookingsPersistence() {
   const { toast } = useToast();
   
+  // Add a storage event listener to sync data across tabs
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'roomBookings' && event.newValue) {
+        console.log("Data changed in another tab, syncing...");
+        // This will cause reload to get the latest data
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+  
   const saveBookingsToStorage = (data: RoomBooking[]) => {
     try {
-      localStorage.setItem('roomBookings', JSON.stringify(data));
+      const dataString = JSON.stringify(data);
+      
+      // Store in localStorage for persistence across sessions
+      localStorage.setItem('roomBookings', dataString);
       localStorage.setItem('lastUpdate', new Date().toISOString());
       
-      // Also store in sessionStorage for cross-tab communication
-      sessionStorage.setItem('roomBookings', JSON.stringify(data));
+      // Also store in sessionStorage for reference
+      sessionStorage.setItem('roomBookings', dataString);
       
-      console.log("Stored bookings in localStorage and sessionStorage");
+      console.log(`Stored ${data.length} bookings in storage`);
     } catch (error) {
       console.error("Error storing bookings:", error);
       toast({
@@ -26,14 +44,23 @@ export function useBookingsPersistence() {
 
   const loadBookingsFromStorage = (): RoomBooking[] | null => {
     try {
+      // Attempt to load data from localStorage
       const storedData = localStorage.getItem('roomBookings');
       if (storedData) {
-        console.log("Found stored bookings data");
-        return JSON.parse(storedData);
+        const parsedData = JSON.parse(storedData);
+        console.log(`Found ${parsedData.length} stored bookings data`);
+        return parsedData;
       }
+      
+      console.log("No stored booking data found");
       return null;
     } catch (error) {
       console.error("Error loading bookings:", error);
+      toast({
+        title: "Warning",
+        description: "Could not load previously saved data",
+        variant: "destructive",
+      });
       return null;
     }
   };

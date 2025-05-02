@@ -15,6 +15,7 @@ interface BookingsDisplayProps {
   setViewMode: (mode: ViewMode) => void;
   isLoading: boolean;
   clearFilters: () => void;
+  onUploadClick?: () => void;
 }
 
 const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
@@ -25,7 +26,8 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
   viewMode,
   setViewMode,
   isLoading,
-  clearFilters
+  clearFilters,
+  onUploadClick
 }) => {
   console.log("BookingsDisplay rendered with:", filteredBookings.length, "filtered bookings from", bookings.length, "total bookings");
   
@@ -34,7 +36,7 @@ const BookingsDisplay: React.FC<BookingsDisplayProps> = ({
   }
 
   if (bookings.length === 0) {
-    return <EmptyBookingsState hasBookings={false} clearFilters={clearFilters} />;
+    return <EmptyBookingsState hasBookings={false} clearFilters={clearFilters} onUploadClick={onUploadClick} />;
   }
 
   return (
