@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ViewMode } from '@/types/booking';
 import UploadPage from '@/components/upload/UploadPage';
 import BookingsDisplay from '@/components/bookings/BookingsDisplay';
@@ -8,6 +8,8 @@ import { useBookings } from '@/hooks/use-bookings';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { getSampleData } from '@/utils/sample-data';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileNav from '@/components/MobileNav';
 
 const Index: React.FC = () => {
   // Get bookings and related state from our custom hook
@@ -26,6 +28,7 @@ const Index: React.FC = () => {
   } = useBookings();
   
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     console.log("Index page loaded, bookings:", bookings.length);
@@ -35,37 +38,44 @@ const Index: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   
   // Handler for upload button click
-  const handleUploadClick = () => {
+  const handleUploadClick = useCallback(() => {
     setShowUploadForm(true);
-  };
+  }, [setShowUploadForm]);
 
   // Handler to view bookings
-  const handleViewBookings = () => {
+  const handleViewBookings = useCallback(() => {
     setShowUploadForm(false);
-  };
+  }, [setShowUploadForm]);
   
   // Handler to load sample data
-  const handleLoadSampleData = () => {
+  const handleLoadSampleData = useCallback(() => {
     handleDataLoaded(getSampleData());
     toast({
       title: "Sample data loaded",
       description: "Sample booking data has been loaded successfully",
     });
-  };
+  }, [handleDataLoaded, toast]);
+  
+  // Handler for refreshing data
+  const handleRefresh = useCallback(() => {
+    setIsLoading(true);
+    // Force reload the page to get fresh data
+    window.location.reload();
+  }, [setIsLoading]);
 
   return (
-    <div className="container mx-auto py-4 px-4">
+    <div className="container mx-auto py-4 px-4 mb-16">
       {showUploadForm ? (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">WMATA AV Booking</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">WMATA AV Booking</h1>
             {bookings.length > 0 && (
-              <button 
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+              <Button 
+                variant="outline"
                 onClick={handleViewBookings}
               >
                 View Bookings
-              </button>
+              </Button>
             )}
           </div>
           <UploadPage 
@@ -94,19 +104,27 @@ const Index: React.FC = () => {
             isLoading={isLoading}
             clearFilters={clearFilters}
             onUploadClick={handleUploadClick}
+            onRefreshClick={handleRefresh}
           />
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <h1 className="text-3xl font-bold mb-2">WMATA AV Booking</h1>
-          <p className="text-gray-600 mb-8">AV Room Booking Information</p>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">WMATA AV Booking</h1>
+          <p className="text-gray-600 mb-6">AV Room Booking Information</p>
           
           <p className="text-lg mb-6">This is a public view of the WMATA room booking system. The data has not been uploaded yet.</p>
           
-          <div className="space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              onClick={handleRefresh}
+              variant="default"
+            >
+              Refresh Data
+            </Button>
+            
             <Button 
               onClick={handleLoadSampleData}
-              variant="default"
+              variant="outline"
             >
               Load Sample Data
             </Button>
@@ -118,6 +136,14 @@ const Index: React.FC = () => {
               Upload Data
             </Button>
           </div>
+          
+          {isMobile && (
+            <MobileNav 
+              viewMode={viewMode} 
+              setViewMode={setViewMode} 
+              onUploadClick={handleUploadClick}
+            />
+          )}
         </div>
       )}
     </div>

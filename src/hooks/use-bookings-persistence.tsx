@@ -32,8 +32,16 @@ export function useBookingsPersistence() {
       sessionStorage.setItem('roomBookings', dataString);
       
       console.log(`Stored ${data.length} bookings in storage`);
+      
+      // Show confirmation toast
+      toast({
+        title: "Data saved",
+        description: `${data.length} bookings saved successfully`,
+      });
     } catch (error) {
       console.error("Error storing bookings:", error);
+      
+      // Show error toast
       toast({
         title: "Error",
         description: "Failed to save booking data",
@@ -56,6 +64,8 @@ export function useBookingsPersistence() {
       return null;
     } catch (error) {
       console.error("Error loading bookings:", error);
+      
+      // Show warning toast
       toast({
         title: "Warning",
         description: "Could not load previously saved data",

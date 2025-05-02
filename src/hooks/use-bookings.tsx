@@ -71,12 +71,12 @@ export function useBookings() {
         console.log("Successfully loaded saved bookings");
       } else {
         // No saved bookings found
-        setShowUploadForm(true); // Show upload form if no data
-        console.log("No saved bookings found, showing upload form");
+        setShowUploadForm(false); // Show empty state with options
+        console.log("No saved bookings found, showing empty state");
       }
     } catch (e) {
       console.error("Error during initialization:", e);
-      setShowUploadForm(true);
+      setShowUploadForm(false); // Show empty state with options
     } finally {
       setIsLoading(false);
       setIsInitialized(true);
