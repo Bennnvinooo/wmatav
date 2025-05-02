@@ -3,11 +3,21 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Prevent browsers from doing their native handling of touch events
+// Function to check if the device is an iOS device
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+// Handle iOS specific touch issues
 document.addEventListener('touchstart', function(e) {
+  // Allow touches on input fields
   if (e.target && (e.target as HTMLElement).tagName !== 'INPUT' && 
-      (e.target as HTMLElement).tagName !== 'TEXTAREA') {
-    e.preventDefault();
+      (e.target as HTMLElement).tagName !== 'TEXTAREA' &&
+      (e.target as HTMLElement).tagName !== 'BUTTON' &&
+      (e.target as HTMLElement).tagName !== 'SELECT') {
+    
+    // Prevent the default action for non-input elements on iOS
+    if (isIOS()) {
+      e.preventDefault();
+    }
   }
 }, { passive: false });
 
@@ -38,6 +48,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }, 3000);
   }
 });
+
+// Handle iOS standalone mode detection
+const isInStandaloneMode = () => 
+  ('standalone' in window.navigator) && 
+  ((window.navigator as any).standalone);
+
+// Show a message if in standalone mode on iOS
+if (isIOS() && isInStandaloneMode()) {
+  console.log('Running in iOS standalone mode (added to home screen)');
+}
 
 // Handle PWA installation success
 window.addEventListener('appinstalled', () => {

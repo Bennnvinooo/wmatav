@@ -12,7 +12,7 @@ interface MobileNavProps {
 
 const MobileNav: React.FC<MobileNavProps> = ({ viewMode, setViewMode, onUploadClick }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center py-2 md:hidden z-10 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center py-3 md:hidden z-10 shadow-lg safe-area-bottom">
       <button
         onClick={() => setViewMode('calendar')}
         className={cn(
@@ -20,7 +20,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ viewMode, setViewMode, onUploadCl
           viewMode === 'calendar' ? "text-primary" : "text-muted-foreground"
         )}
       >
-        <CalendarDays className="w-5 h-5" />
+        <CalendarDays className="w-6 h-6" />
         <span className="text-xs mt-1">Calendar</span>
       </button>
 
@@ -31,7 +31,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ viewMode, setViewMode, onUploadCl
           viewMode === 'list' ? "text-primary" : "text-muted-foreground"
         )}
       >
-        <List className="w-5 h-5" />
+        <List className="w-6 h-6" />
         <span className="text-xs mt-1">List</span>
       </button>
 
@@ -39,7 +39,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ viewMode, setViewMode, onUploadCl
         onClick={() => window.location.reload()}
         className="flex flex-col items-center py-1 px-2 rounded-md text-muted-foreground"
       >
-        <RefreshCw className="w-5 h-5" />
+        <RefreshCw className="w-6 h-6" />
         <span className="text-xs mt-1">Refresh</span>
       </button>
 
@@ -47,7 +47,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ viewMode, setViewMode, onUploadCl
         onClick={onUploadClick}
         className="flex flex-col items-center py-1 px-2 rounded-md text-muted-foreground"
       >
-        <Upload className="w-5 h-5" />
+        <Upload className="w-6 h-6" />
         <span className="text-xs mt-1">Upload</span>
       </button>
     </div>

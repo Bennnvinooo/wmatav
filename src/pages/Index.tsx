@@ -32,6 +32,14 @@ const Index: React.FC = () => {
   
   useEffect(() => {
     console.log("Index page loaded, bookings:", bookings.length);
+    
+    // Add iOS specific viewport meta tag
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      const viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (viewportMeta) {
+        viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+      }
+    }
   }, [bookings.length]);
   
   // State for toggling between calendar and list views
@@ -64,7 +72,7 @@ const Index: React.FC = () => {
   }, [setIsLoading]);
 
   return (
-    <div className="container mx-auto py-4 px-4 mb-16">
+    <div className="container mx-auto py-4 px-4 mb-20 safe-area-inset">
       {showUploadForm ? (
         <>
           <div className="flex justify-between items-center mb-4">
@@ -73,6 +81,7 @@ const Index: React.FC = () => {
               <Button 
                 variant="outline"
                 onClick={handleViewBookings}
+                className="py-6 px-4"
               >
                 View Bookings
               </Button>
@@ -112,12 +121,13 @@ const Index: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold mb-2">WMATA AV Booking</h1>
           <p className="text-gray-600 mb-6">AV Room Booking Information</p>
           
-          <p className="text-lg mb-6">This is a public view of the WMATA room booking system. The data has not been uploaded yet.</p>
+          <p className="text-lg mb-8">This is a public view of the WMATA room booking system. The data has not been uploaded yet.</p>
           
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 w-full max-w-xs">
             <Button 
               onClick={handleRefresh}
               variant="default"
+              className="py-6 text-base w-full"
             >
               Refresh Data
             </Button>
@@ -125,6 +135,7 @@ const Index: React.FC = () => {
             <Button 
               onClick={handleLoadSampleData}
               variant="outline"
+              className="py-6 text-base w-full"
             >
               Load Sample Data
             </Button>
@@ -132,6 +143,7 @@ const Index: React.FC = () => {
             <Button 
               onClick={handleUploadClick}
               variant="outline"
+              className="py-6 text-base w-full"
             >
               Upload Data
             </Button>

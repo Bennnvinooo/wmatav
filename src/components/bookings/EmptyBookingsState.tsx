@@ -19,20 +19,20 @@ const EmptyBookingsState: React.FC<EmptyBookingsStateProps> = ({
   if (!hasBookings) {
     return (
       <div className="bg-background border rounded-lg shadow-md p-6 mx-auto max-w-md mt-4 flex flex-col items-center text-center">
-        <AlertCircle className="h-12 w-12 mb-2 text-primary" />
-        <h2 className="text-xl font-bold mb-2">No booking data available</h2>
-        <p className="mb-4 text-center text-muted-foreground">
+        <AlertCircle className="h-14 w-14 mb-3 text-primary" />
+        <h2 className="text-xl font-semibold mb-3">No booking data available</h2>
+        <p className="mb-5 text-center text-muted-foreground">
           Please check back later when data has been uploaded.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
+        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
           {onRefreshClick && (
             <Button 
               onClick={onRefreshClick}
-              className="w-full"
+              className="w-full py-6 text-base"
               variant="default"
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <RefreshCw className="mr-2 h-5 w-5" />
               Refresh Data
             </Button>
           )}
@@ -40,10 +40,10 @@ const EmptyBookingsState: React.FC<EmptyBookingsStateProps> = ({
           {onUploadClick && (
             <Button 
               onClick={onUploadClick}
-              className="w-full"
+              className="w-full py-6 text-base"
               variant={onRefreshClick ? "outline" : "default"}
             >
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="mr-2 h-5 w-5" />
               Upload Data
             </Button>
           )}
@@ -59,7 +59,7 @@ const EmptyBookingsState: React.FC<EmptyBookingsStateProps> = ({
       <Button 
         variant="outline" 
         onClick={clearFilters}
-        className="mt-4"
+        className="mt-5 py-6 px-6 text-base"
       >
         Clear All Filters
       </Button>
